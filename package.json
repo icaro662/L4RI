@@ -1,0 +1,21 @@
+{
+  "name": "l4ri",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node bot.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@discordjs/core": "2.4.0",
+    "@discordjs/rest": "2.6.0",
+    "@discordjs/ws": "2.0.4",
+    "axios": "^1.13.6",
+    "dotenv": "^17.3.1"
+  }
+}
