@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import {Client, GatewayDispatchEvents} from '@discordjs/core';
 import {REST} from '@discordjs/rest';
 import {WebSocketManager} from '@discordjs/ws';
@@ -17,7 +18,7 @@ if (!token) {
 const rest = new REST({api: 'https://api.fluxer.app', version: '1'}).setToken(token);
 
 const gateway = new WebSocketManager({
-  intents: 0,
+  intents: 513,
   rest,
   token,
   version: '1',
