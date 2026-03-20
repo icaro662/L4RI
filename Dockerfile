@@ -1,24 +1,25 @@
 FROM node:22
 
-# Install dependencies
+# Install dependencies (ffmpeg is required by yt-dlp sometimes)
 RUN apt-get update && \
-    apt-get install -y python3 ffmpeg curl && \
+    apt-get install -y ffmpeg curl && \
     rm -rf /var/lib/apt/lists/*
 
-# Install yt-dlp binary
-RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && \
-    chmod a+rx /usr/local/bin/yt-dlp
+# Install yt-dlp binary (NO python needed)
+RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp \
+    -o /usr/local/bin/yt-dlp && \
+    chmod +x /usr/local/bin/yt-dlp
 
 # Set working directory
 WORKDIR /app
 
-# Copy package.json / package-lock.json
+# Copy package files first (better caching)
 COPY package*.json ./
 
-# Install node deps
+# Install dependencies
 RUN npm ci
 
-# Copy bot files
+# Copy rest of your bot
 COPY . .
 
 # Start bot
