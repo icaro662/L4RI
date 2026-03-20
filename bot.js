@@ -32,48 +32,6 @@ const gateway = new WebSocketManager({
   version: '1',
 });
 
-function getInstagramData(url) {
-  return new Promise((resolve, reject) => {
-    const proc = spawn("python3", ["-m", "yt_dlp", "-j", url]);
-
-    let data = "";
-    let error = "";
-
-    proc.stdout.on("data", (chunk) => {
-      data += chunk.toString();
-    });
-
-    proc.stderr.on("data", (chunk) => {
-      error += chunk.toString();
-    });
-
-    proc.on("close", (code) => {
-      if (code === 0 && data) {
-        try {
-          const json = JSON.parse(data);
-
-          resolve({
-            video: json.url,
-            thumbnail: json.thumbnail,
-            title: json.title
-          });
-
-        } catch (err) {
-          reject("JSON parse failed");
-        }
-      } else {
-        reject("yt-dlp error: " + error);
-      }
-    });
-
-    // ⏱️ timeout (prevents freezing)
-    setTimeout(() => {
-      proc.kill();
-      reject("yt-dlp timed out");
-    }, 10000);
-  });
-}
-
 async function getSteamDBStyleFreeGames() {
   const res = await axios.get(
     "https://store.steampowered.com/api/featuredcategories"
@@ -127,11 +85,15 @@ function extractUrls(text) {
   return text.match(/https?:\/\/\S+/g) || [];
 }
 
-function cleanInstagramUrl(url) {
-  return url.includes("instagram.com") ? url.split("?")[0] : url;
-}
-
 function getEmbedVariants(url) {
+    if (url.includes("instagram.com") || url.includes("instagram/reel")) {
+      return [
+        url.replace("instagram.com", "ddinstagram.com"),
+        url.replace("instagram.com", "ssinstagram.com"),
+        url
+      ]
+    }
+
   if (url.includes("twitter.com") || url.includes("x.com")) {
     return [
       url.replace(/(twitter|x)\.com/, "fxtwitter.com"),
@@ -153,63 +115,41 @@ function getEmbedVariants(url) {
 //Ouvinte de eventos para quando uma mensagem é criada. Ele verifica se a mensagem foi enviada por um bot e, em seguida, processa o comando. Se o comando for "yt", ele faz uma solicitação à API do YouTube para pesquisar vídeos com base na consulta fornecida e responde com o link do vídeo encontrado. Se a mensagem for "casa cmg?", ele responde com "SIM CASO COM VC".
 const client = new Client({rest, gateway});
 
-
 client.on(GatewayDispatchEvents.MessageCreate, async ({api, data}) => {
   if (data.author.bot) {
     return;
   }
 
-if (!data.content.startsWith(PREFIX)) {
-    const urls = extractUrls(data.content);
+  //Verifica se o conteúdo da mensagem começa com o prefixo definido. Se não começar, ele extrai as URLs do conteúdo da mensagem usando a função extractUrls. Em seguida, ele verifica cada URL para ver se ela pertence a determinados domínios (tenor.com, giphy.com, imgur.com, youtube.com, youtu.be) e, se não pertencer, ele gera variantes de embed para a URL usando a função getEmbedVariants. Depois disso, ele exclui a mensagem original e cria uma nova mensagem com o primeiro embed variante.
+  if (!data.content.startsWith(PREFIX)) {
+  const urls = extractUrls(data.content);
 
-    if (urls.length > 0) {
+  if (urls.length > 0) {
 
-      for (let url of urls) {
-        url = cleanInstagramUrl(url);
+    for (let url of urls) {
 
-        if (url.includes("instagram.com")) {
-          try {
-            const ig = await getInstagramData(url);
+      if (url.includes("tenor.com")) continue;
+      if (url.includes("giphy.com")) continue;
+      if (url.includes("imgur.com")) continue;
+      if (url.includes("youtube.com")) continue;
+      if (url.includes("youtu.be")) continue;
 
-            await api.channels.createMessage(data.channel_id, {
-              content: `Video: ${ig.video}`,
-              // embeds: [
-                  //  {
-                     // title: ig.title || "Instagram Video",
-                     // url: url,
-                     // image: { url: ig.thumbnail },
-                     // color: 0xff2a7f
-                   // }
-                  //]
-            });
+      const variants = getEmbedVariants(url);
 
-          } catch (err) {
-            console.error("IG FAIL:", err);
+      await api.channels.deleteMessage(data.channel_id, data.id);
 
-            await api.channels.createMessage(data.channel_id, {
-              content: url
-            });
-          }
-
-          continue;
-        }
-
-        const variants = getEmbedVariants(url);
-
-        await api.channels.createMessage(data.channel_id, {
-          content: variants[0]
-        });
-      }
-
-      return;
+      await api.channels.createMessage(data.channel_id, {
+        content: variants[0]
+      });
     }
-  }
 
-  //Verifica se a mensagem começa com o prefixo definido. Se não começar, o código retorna e não processa a mensagem. Em seguida, ele extrai os argumentos do comando, separando-os por espaços, e identifica o comando principal (o primeiro argumento). O código então verifica se o comando é "yt" e, se for, realiza uma pesquisa no YouTube usando a API para encontrar um vídeo correspondente à consulta fornecida. Se um vídeo for encontrado, ele responde com o link do vídeo. Caso contrário, ou se ocorrer um erro durante a pesquisa, ele responde com uma mensagem de erro apropriada.
-  if (!data.content.startsWith(PREFIX)) return;
+    return;
+  }
+}
+
   const args = data.content.slice(PREFIX.length).trim().split(" ");
   const command = args.shift().toLowerCase();
-  
+
 
   if (command === "yt") {
     const query = args.join(" ");
@@ -220,7 +160,6 @@ if (!data.content.startsWith(PREFIX)) {
     });
 }
   
-
 //Faz uma solicitação à API do YouTube para pesquisar vídeos com base na consulta fornecida. Ele usa o endpoint de pesquisa da API do YouTube, passando os parâmetros necessários, como a parte "snippet", a consulta de pesquisa, a chave da API, o número máximo de resultados e o tipo de resultado (vídeo). Se um vídeo for encontrado, ele responde com o link do vídeo. Caso contrário, ou se ocorrer um erro durante a pesquisa, ele responde com uma mensagem de erro apropriada.
     try {
       const res = await axios.get(
@@ -253,7 +192,6 @@ if (!data.content.startsWith(PREFIX)) {
 });
 }
   }
-  
 
     //Verifica se o conteúdo da mensagem é "casa cmg?" e, se for, responde com "SIM CASO COM VC". A resposta é enviada como uma mensagem referenciando a mensagem original para manter o contexto da conversa.
   if (data.content === 'casa cmg?') {
@@ -268,9 +206,6 @@ if (command === "free") {
 }
 });
 
-
-
-
 //Ouvinte de eventos para quando o bot estiver pronto. Ele extrai o nome de usuário e o discriminador do bot a partir dos dados recebidos e imprime uma mensagem no console indicando que o bot está logado com sucesso.
 client.on(GatewayDispatchEvents.Ready, async ({api, data}) => {
   const {username, discriminator} = data.user;
@@ -282,7 +217,7 @@ client.on(GatewayDispatchEvents.Ready, async ({api, data}) => {
   // run every 30 min
   setInterval(() => {
     checkFreeGames(api);
-  }, 1000 * 10 * 60);
+  }, 1000 * 60 * 30);
 });
 
 //Inicia a conexão com o gateway do Fluxer, permitindo que o bot comece a receber eventos e interagir com os usuários.
