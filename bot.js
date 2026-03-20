@@ -4,7 +4,6 @@ import {REST} from '@discordjs/rest';
 import {WebSocketManager} from '@discordjs/ws';
 import axios from 'axios';
 import { spawn } from "child_process";
-import path from "path";
 
 //Processa a variável de ambiente para o prefixo do comando, a chave da API do YouTube e o token do bot. Se alguma dessas variáveis não estiver definida, o código lançará um erro.
 const CHANNEL_ID = "1484334210085946326";
@@ -33,11 +32,9 @@ const gateway = new WebSocketManager({
   version: '1',
 });
 
-function getDa(url) {
+function getDataUrl(url) {
   return new Promise((resolve, reject) => {
   
-    const ytDlpPath = path.resolve("./bin/yt-dlp");
-
     const proc = spawn("yt-dlp", ["-j", url]);
 
     let data = "";
@@ -73,7 +70,7 @@ function getDa(url) {
     setTimeout(() => {
       proc.kill();
       reject("yt-dlp timed out");
-    }, 10000);
+    }, 30000);
   });
 }
 
@@ -167,10 +164,11 @@ if (!data.content.startsWith(PREFIX)) {
   if (urls.length > 0) {
 
     for (let url of urls) {
+
+      if (url.includes("tenor.com")) continue;
+
       url = cleanInstagramUrl(url);
-
-       if (url.includes("tenor.com")) continue;
-
+      
       if (url.includes("instagram.com")) {
         try {
           const ig = await getDataUrl(url);
@@ -250,7 +248,6 @@ if (!data.content.startsWith(PREFIX)) {
 });
 }
   }
-  
 
     //Verifica se o conteúdo da mensagem é "casa cmg?" e, se for, responde com "SIM CASO COM VC". A resposta é enviada como uma mensagem referenciando a mensagem original para manter o contexto da conversa.
   if (data.content === 'casa cmg?') {
@@ -276,7 +273,7 @@ client.on(GatewayDispatchEvents.Ready, async ({api, data}) => {
   // run every 30 min
   setInterval(() => {
     checkFreeGames(api);
-  }, 1000 * 10 * 60);
+  }, 1000 * 60 * 30);
 });
 
 //Inicia a conexão com o gateway do Fluxer, permitindo que o bot comece a receber eventos e interagir com os usuários.
