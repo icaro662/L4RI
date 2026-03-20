@@ -162,9 +162,6 @@ if (!data.content.startsWith(PREFIX)) {
   const urls = extractUrls(data.content);
 
   if (urls.length > 0) {
-    setTimeout(() => {
-      api.channels.deleteMessage(data.channel_id, data.id).catch(() => {});
-    }, 500);
 
     for (let url of urls) {
       url = cleanInstagramUrl(url);
@@ -175,7 +172,7 @@ if (!data.content.startsWith(PREFIX)) {
 
           // Send the raw URL from yt-dlp directly
           await api.channels.createMessage(data.channel_id, {
-            content: ig.video
+            content: `${ig.video}`
           });
 
         } catch (err) {
@@ -262,9 +259,6 @@ if (command === "free") {
   await checkFreeGames(api);
 }
 });
-
-
-
 
 //Ouvinte de eventos para quando o bot estiver pronto. Ele extrai o nome de usuário e o discriminador do bot a partir dos dados recebidos e imprime uma mensagem no console indicando que o bot está logado com sucesso.
 client.on(GatewayDispatchEvents.Ready, async ({api, data}) => {
