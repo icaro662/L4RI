@@ -3,7 +3,7 @@ import {Client, GatewayDispatchEvents} from '@discordjs/core';
 import {REST} from '@discordjs/rest';
 import {WebSocketManager} from '@discordjs/ws';
 import axios from 'axios';
-import { spawn } from "child_process";
+import ytdlp from 'yt-dlp-exec';
 
 //Processa a variável de ambiente para o prefixo do comando, a chave da API do YouTube e o token do bot. Se alguma dessas variáveis não estiver definida, o código lançará um erro.
 const CHANNEL_ID = "1484334210085946326";
@@ -32,46 +32,28 @@ const gateway = new WebSocketManager({
   version: '1',
 });
 
-function getInstagramData(url) {
-  return new Promise((resolve, reject) => {
-    const proc = spawn("yt-dlp", ["-j", url]);
-
-    let data = "";
-    let error = "";
-
-    proc.stdout.on("data", (chunk) => {
-      data += chunk.toString();
+async function getInstagramData(url) {
+  try {
+    const json = await ytdlp(url, {
+      dumpSingleJson: true,
+      noWarnings: true,
+      preferFreeFormats: true
     });
 
-    proc.stderr.on("data", (chunk) => {
-      error += chunk.toString();
-    });
+    // json.url might be undefined for some posts; fallback to first format
+    const videoUrl = json.url || (json.formats && json.formats[0]?.url);
 
-    proc.on("close", (code) => {
-      if (code === 0 && data) {
-        try {
-          const json = JSON.parse(data);
+    if (!videoUrl) throw new Error("No video URL found");
 
-          resolve({
-            video: json.url,
-            thumbnail: json.thumbnail,
-            title: json.title
-          });
+    return {
+      video: videoUrl,
+      thumbnail: json.thumbnail,
+      title: json.title
+    };
 
-        } catch (err) {
-          reject("JSON parse failed");
-        }
-      } else {
-        reject("yt-dlp error: " + error);
-      }
-    });
-
-    // ⏱️ timeout (prevents freezing)
-    setTimeout(() => {
-      proc.kill();
-      reject("yt-dlp timed out");
-    }, 10000);
-  });
+  } catch (err) {
+    throw new Error("yt-dlp failed: " + err.message);
+  }
 }
 
 async function getSteamDBStyleFreeGames() {
