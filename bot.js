@@ -120,7 +120,7 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({api, data}) => {
     return;
   }
 
-  //Verifica se a mensagem começa com o prefixo definido. Se não começar, o código retorna e não processa a mensagem. Em seguida, ele extrai os argumentos do comando, separando-os por espaços, e identifica o comando principal (o primeiro argumento). O código então verifica se o comando é "yt" e, se for, realiza uma pesquisa no YouTube usando a API para encontrar um vídeo correspondente à consulta fornecida. Se um vídeo for encontrado, ele responde com o link do vídeo. Caso contrário, ou se ocorrer um erro durante a pesquisa, ele responde com uma mensagem de erro apropriada.
+  //Verifica se o conteúdo da mensagem começa com o prefixo definido. Se não começar, ele extrai as URLs do conteúdo da mensagem usando a função extractUrls. Em seguida, ele verifica cada URL para ver se ela pertence a determinados domínios (tenor.com, giphy.com, imgur.com, youtube.com, youtu.be) e, se não pertencer, ele gera variantes de embed para a URL usando a função getEmbedVariants. Depois disso, ele exclui a mensagem original e cria uma nova mensagem com o primeiro embed variante.
   if (!data.content.startsWith(PREFIX)) {
   const urls = extractUrls(data.content);
 
@@ -136,9 +136,7 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({api, data}) => {
 
       const variants = getEmbedVariants(url);
 
-      await api.channels.deleteMessage(data.channel_id, {
-        message_id: data.id,
-      });
+      await api.channels.deleteMessage(data.channel_id, data.id);
 
       await api.channels.createMessage(data.channel_id, {
         content: variants[0]
