@@ -122,17 +122,14 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({api, data}) => {
 
   //Verifica se o conteúdo da mensagem começa com o prefixo definido. Se não começar, ele extrai as URLs do conteúdo da mensagem usando a função extractUrls. Em seguida, ele verifica cada URL para ver se ela pertence a determinados domínios (tenor.com, giphy.com, imgur.com, youtube.com, youtu.be) e, se não pertencer, ele gera variantes de embed para a URL usando a função getEmbedVariants. Depois disso, ele exclui a mensagem original e cria uma nova mensagem com o primeiro embed variante.
   if (!data.content.startsWith(PREFIX)) {
+
   const urls = extractUrls(data.content);
 
   if (urls.length > 0) {
 
     for (let url of urls) {
 
-      if (url.includes("tenor.com")) continue;
-      if (url.includes("giphy.com")) continue;
-      if (url.includes("imgur.com")) continue;
-      if (url.includes("youtube.com")) continue;
-      if (url.includes("youtu.be")) continue;
+      if (url.includes("instagram.com") || url.includes("instagram/reel") || url.includes("twitter.com") || url.includes("x.com") || url.includes("reddit.com")) {
 
       const variants = getEmbedVariants(url);
 
@@ -140,9 +137,11 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({api, data}) => {
 
       await api.channels.createMessage(data.channel_id, {
         content: variants[0]
-      });
-    }
 
+      });
+
+    }
+  }
     return;
   }
 }
