@@ -33,7 +33,7 @@ const gateway = new WebSocketManager({
   version: '1',
 });
 
-function getInstagramData(url) {
+function getDa(url) {
   return new Promise((resolve, reject) => {
   
     const ytDlpPath = path.resolve("./bin/yt-dlp");
@@ -169,9 +169,11 @@ if (!data.content.startsWith(PREFIX)) {
     for (let url of urls) {
       url = cleanInstagramUrl(url);
 
+       if (url.includes("tenor.com")) continue;
+
       if (url.includes("instagram.com")) {
         try {
-          const ig = await getInstagramData(url);
+          const ig = await getDataUrl(url);
 
           // Send the raw URL from yt-dlp directly
           await api.channels.createMessage(data.channel_id, {
