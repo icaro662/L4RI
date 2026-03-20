@@ -34,7 +34,7 @@ const gateway = new WebSocketManager({
 
 function getInstagramData(url) {
   return new Promise((resolve, reject) => {
-    const proc = spawn("yt-dlp", ["-j", url]);
+    const proc = spawn("python3", ["-m", "yt_dlp", "-j", url]);
 
     let data = "";
     let error = "";
