@@ -32,48 +32,6 @@ const gateway = new WebSocketManager({
   version: '1',
 });
 
-function getDataUrl(url) {
-  return new Promise((resolve, reject) => {
-  
-    const proc = spawn("yt-dlp", ["-j", url]);
-
-    let data = "";
-    let error = "";
-
-    proc.stdout.on("data", (chunk) => {
-      data += chunk.toString();
-    });
-
-    proc.stderr.on("data", (chunk) => {
-      error += chunk.toString();
-    });
-
-    proc.on("close", (code) => {
-      if (code === 0 && data) {
-        try {
-          const json = JSON.parse(data);
-
-          resolve({
-            video: json.url,
-            thumbnail: json.thumbnail,
-            title: json.title
-          });
-        } catch (err) {
-          reject("JSON parse failed");
-        }
-      } else {
-        reject("yt-dlp error: " + error);
-      }
-    });
-
-    // ⏱️ timeout
-    setTimeout(() => {
-      proc.kill();
-      reject("yt-dlp timed out");
-    }, 30000);
-  });
-}
-
 async function getSteamDBStyleFreeGames() {
   const res = await axios.get(
     "https://store.steampowered.com/api/featuredcategories"
@@ -127,11 +85,15 @@ function extractUrls(text) {
   return text.match(/https?:\/\/\S+/g) || [];
 }
 
-function cleanInstagramUrl(url) {
-  return url.includes("instagram.com") ? url.split("?")[0] : url;
-}
-
 function getEmbedVariants(url) {
+    if (url.includes("instagram.com") || url.includes("instagram/reel")) {
+      return [
+        url.replace("instagram.com", "ddinstagram.com"),
+        url.replace("instagram.com", "ssinstagram.com"),
+        url
+      ]
+    }
+
   if (url.includes("twitter.com") || url.includes("x.com")) {
     return [
       url.replace(/(twitter|x)\.com/, "fxtwitter.com"),
@@ -158,7 +120,8 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({api, data}) => {
     return;
   }
 
-if (!data.content.startsWith(PREFIX)) {
+  //Verifica se a mensagem começa com o prefixo definido. Se não começar, o código retorna e não processa a mensagem. Em seguida, ele extrai os argumentos do comando, separando-os por espaços, e identifica o comando principal (o primeiro argumento). O código então verifica se o comando é "yt" e, se for, realiza uma pesquisa no YouTube usando a API para encontrar um vídeo correspondente à consulta fornecida. Se um vídeo for encontrado, ele responde com o link do vídeo. Caso contrário, ou se ocorrer um erro durante a pesquisa, ele responde com uma mensagem de erro apropriada.
+  if (!data.content.startsWith(PREFIX)) {
   const urls = extractUrls(data.content);
 
   if (urls.length > 0) {
@@ -166,28 +129,10 @@ if (!data.content.startsWith(PREFIX)) {
     for (let url of urls) {
 
       if (url.includes("tenor.com")) continue;
-
-      url = cleanInstagramUrl(url);
-      
-      if (url.includes("instagram.com")) {
-        try {
-          const ig = await getDataUrl(url);
-
-          // Send the raw URL from yt-dlp directly
-          await api.channels.createMessage(data.channel_id, {
-            content: `${ig.video}`
-          });
-
-        } catch (err) {
-          console.error("IG FAIL:", err);
-
-          await api.channels.createMessage(data.channel_id, {
-            content: url
-          });
-        }
-
-        continue;
-      }
+      if (url.includes("giphy.com")) continue;
+      if (url.includes("imgur.com")) continue;
+      if (url.includes("youtube.com")) continue;
+      if (url.includes("youtu.be")) continue;
 
       const variants = getEmbedVariants(url);
 
@@ -200,11 +145,9 @@ if (!data.content.startsWith(PREFIX)) {
   }
 }
 
-  //Verifica se a mensagem começa com o prefixo definido. Se não começar, o código retorna e não processa a mensagem. Em seguida, ele extrai os argumentos do comando, separando-os por espaços, e identifica o comando principal (o primeiro argumento). O código então verifica se o comando é "yt" e, se for, realiza uma pesquisa no YouTube usando a API para encontrar um vídeo correspondente à consulta fornecida. Se um vídeo for encontrado, ele responde com o link do vídeo. Caso contrário, ou se ocorrer um erro durante a pesquisa, ele responde com uma mensagem de erro apropriada.
-  if (!data.content.startsWith(PREFIX)) return;
   const args = data.content.slice(PREFIX.length).trim().split(" ");
   const command = args.shift().toLowerCase();
-  
+
 
   if (command === "yt") {
     const query = args.join(" ");
