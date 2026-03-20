@@ -3,7 +3,7 @@ import {Client, GatewayDispatchEvents} from '@discordjs/core';
 import {REST} from '@discordjs/rest';
 import {WebSocketManager} from '@discordjs/ws';
 import axios from 'axios';
-import ytdlp from "yt-dlp-exec";
+import { spawn } from "child_process";
 
 //Processa a variável de ambiente para o prefixo do comando, a chave da API do YouTube e o token do bot. Se alguma dessas variáveis não estiver definida, o código lançará um erro.
 const CHANNEL_ID = "1484334210085946326";
@@ -32,23 +32,46 @@ const gateway = new WebSocketManager({
   version: '1',
 });
 
-async function getInstagramData(url) {
-  try {
-    const json = await ytdlp(url, {
-      dumpSingleJson: true,
-      noWarnings: true,
-      preferFreeFormats: true
+function getInstagramData(url) {
+  return new Promise((resolve, reject) => {
+    const proc = spawn("yt-dlp", ["-j", url]);
+
+    let data = "";
+    let error = "";
+
+    proc.stdout.on("data", (chunk) => {
+      data += chunk.toString();
     });
 
-    return {
-      video: json.url,
-      thumbnail: json.thumbnail,
-      title: json.title
-    };
+    proc.stderr.on("data", (chunk) => {
+      error += chunk.toString();
+    });
 
-  } catch (err) {
-    throw new Error("yt-dlp failed: " + err.message);
-  }
+    proc.on("close", (code) => {
+      if (code === 0 && data) {
+        try {
+          const json = JSON.parse(data);
+
+          resolve({
+            video: json.url,
+            thumbnail: json.thumbnail,
+            title: json.title
+          });
+
+        } catch (err) {
+          reject("JSON parse failed");
+        }
+      } else {
+        reject("yt-dlp error: " + error);
+      }
+    });
+
+    // ⏱️ timeout (prevents freezing)
+    setTimeout(() => {
+      proc.kill();
+      reject("yt-dlp timed out");
+    }, 10000);
+  });
 }
 
 async function getSteamDBStyleFreeGames() {
@@ -130,57 +153,52 @@ function getEmbedVariants(url) {
 //Ouvinte de eventos para quando uma mensagem é criada. Ele verifica se a mensagem foi enviada por um bot e, em seguida, processa o comando. Se o comando for "yt", ele faz uma solicitação à API do YouTube para pesquisar vídeos com base na consulta fornecida e responde com o link do vídeo encontrado. Se a mensagem for "casa cmg?", ele responde com "SIM CASO COM VC".
 const client = new Client({rest, gateway});
 
-
 client.on(GatewayDispatchEvents.MessageCreate, async ({api, data}) => {
   if (data.author.bot) {
     return;
   }
 
 if (!data.content.startsWith(PREFIX)) {
-    const urls = extractUrls(data.content);
+  const urls = extractUrls(data.content);
 
-    if (urls.length > 0) {
+  if (urls.length > 0) {
+    setTimeout(() => {
+      api.channels.deleteMessage(data.channel_id, data.id).catch(() => {});
+    }, 500);
 
-      for (let url of urls) {
-        url = cleanInstagramUrl(url);
+    for (let url of urls) {
+      url = cleanInstagramUrl(url);
 
-        if (url.includes("instagram.com")) {
-          try {
-            const ig = await getInstagramData(url);
+      if (url.includes("instagram.com")) {
+        try {
+          const ig = await getInstagramData(url);
 
-            await api.channels.createMessage(data.channel_id, {
-              content: `Video: ${ig.video}`,
-              // embeds: [
-                  //  {
-                     // title: ig.title || "Instagram Video",
-                     // url: url,
-                     // image: { url: ig.thumbnail },
-                     // color: 0xff2a7f
-                   // }
-                  //]
-            });
+          // Send the raw URL from yt-dlp directly
+          await api.channels.createMessage(data.channel_id, {
+            content: ig.video
+          });
 
-          } catch (err) {
-            console.error("IG FAIL:", err);
+        } catch (err) {
+          console.error("IG FAIL:", err);
 
-            await api.channels.createMessage(data.channel_id, {
-              content: url
-            });
-          }
-
-          continue;
+          await api.channels.createMessage(data.channel_id, {
+            content: url
+          });
         }
 
-        const variants = getEmbedVariants(url);
-
-        await api.channels.createMessage(data.channel_id, {
-          content: variants[0]
-        });
+        continue;
       }
 
-      return;
+      const variants = getEmbedVariants(url);
+
+      await api.channels.createMessage(data.channel_id, {
+        content: variants[0]
+      });
     }
+
+    return;
   }
+}
 
   //Verifica se a mensagem começa com o prefixo definido. Se não começar, o código retorna e não processa a mensagem. Em seguida, ele extrai os argumentos do comando, separando-os por espaços, e identifica o comando principal (o primeiro argumento). O código então verifica se o comando é "yt" e, se for, realiza uma pesquisa no YouTube usando a API para encontrar um vídeo correspondente à consulta fornecida. Se um vídeo for encontrado, ele responde com o link do vídeo. Caso contrário, ou se ocorrer um erro durante a pesquisa, ele responde com uma mensagem de erro apropriada.
   if (!data.content.startsWith(PREFIX)) return;
