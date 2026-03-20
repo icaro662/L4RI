@@ -136,6 +136,10 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({api, data}) => {
 
       const variants = getEmbedVariants(url);
 
+      await api.channels.deleteMessage(data.channel_id, {
+        message_id: data.id,
+      });
+
       await api.channels.createMessage(data.channel_id, {
         content: variants[0]
       });
@@ -158,7 +162,6 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({api, data}) => {
     });
 }
   
-
 //Faz uma solicitação à API do YouTube para pesquisar vídeos com base na consulta fornecida. Ele usa o endpoint de pesquisa da API do YouTube, passando os parâmetros necessários, como a parte "snippet", a consulta de pesquisa, a chave da API, o número máximo de resultados e o tipo de resultado (vídeo). Se um vídeo for encontrado, ele responde com o link do vídeo. Caso contrário, ou se ocorrer um erro durante a pesquisa, ele responde com uma mensagem de erro apropriada.
     try {
       const res = await axios.get(
