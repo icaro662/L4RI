@@ -16,7 +16,6 @@
     "@discordjs/rest": "2.6.0",
     "@discordjs/ws": "2.0.4",
     "axios": "^1.13.6",
-    "dotenv": "^17.3.1",
-    "yt-dlp-exec": "^1.0.2"
+    "dotenv": "^17.3.1"
   }
 }
