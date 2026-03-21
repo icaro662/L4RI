@@ -129,7 +129,11 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({api, data}) => {
 
     for (let url of urls) {
 
-      if (url.includes("instagram.com") || url.includes("instagram/reel") || url.includes("twitter.com") || url.includes("x.com") || url.includes("reddit.com")) {
+      if (url.includes("instagram.com") || 
+          url.includes("instagram/reel") || 
+          url.includes("twitter.com") || 
+          url.includes("x.com") || 
+          url.includes("reddit.com")) {
 
       const variants = getEmbedVariants(url);
 
