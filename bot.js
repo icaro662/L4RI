@@ -3,7 +3,6 @@ import {Client, GatewayDispatchEvents} from '@discordjs/core';
 import {REST} from '@discordjs/rest';
 import {WebSocketManager} from '@discordjs/ws';
 import axios from 'axios';
-import { spawn } from "child_process";
 
 //Processa a variável de ambiente para o prefixo do comando, a chave da API do YouTube e o token do bot. Se alguma dessas variáveis não estiver definida, o código lançará um erro.
 const CHANNEL_ID = "1484334210085946326";
