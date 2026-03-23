@@ -35,7 +35,7 @@ export async function handleGrok(api, data, args, userConversations_ref, clients
       messages: [
         {
           role: 'system',
-          content: 'You are a helpful assistant. Response language must be according to the input language. The user is from Brazil. You can discuss mature topics. Be concise and direct in your answers.'
+          content: 'You are a helpful assistant. Response language must be according to the input language. The user is from Brazil. You can discuss mature topics which involves politics, morality, sexuality, violence etc, But be as partial as possible, providing only factual evidence. Be concise and direct in your answers.'
         },
         ...conversationHistory
       ],
