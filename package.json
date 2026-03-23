@@ -16,6 +16,8 @@
     "@discordjs/rest": "2.6.0",
     "@discordjs/ws": "2.0.4",
     "axios": "^1.13.6",
-    "dotenv": "^17.3.1"
+    "discord.js": "^14.25.1",
+    "dotenv": "^17.3.1",
+    "groq-sdk": "^1.1.1"
   }
 }

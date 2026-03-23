@@ -1,11 +1,14 @@
-import 'dotenv/config';
 import {Client, GatewayDispatchEvents} from '@discordjs/core';
 import {REST} from '@discordjs/rest';
 import {WebSocketManager} from '@discordjs/ws';
+import 'dotenv/config';
 import axios from 'axios';
 
-const CHANNEL_ID = "1484334210085946326"; 
+const CHANNEL_ID = "1484334210085946326";
 const PREFIX = '!';
+
+const userConversations = new Map();
+const MAX_HISTORY = 5;
 
 const YT_API_KEY = process.env['YOUTUBE_API_KEY'];
 if (!YT_API_KEY) {
@@ -191,7 +194,6 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({api, data}) => {
   }
 
   if (!data.content.startsWith(PREFIX)) {
-
   const urls = extractUrls(data.content);
 
   if (urls.length > 0) {
@@ -222,12 +224,112 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({api, data}) => {
   const args = data.content.slice(PREFIX.length).trim().split(" ");
   const command = args.shift().toLowerCase();
 
-  if (command === "yt") {
+  if (command === 'grok') {
+    const userId = data.author.id;
+    const userText = args.join(" ");
+  
+  if (!userText) {
+    return api.channels.createMessage(data.channel_id, {
+      content: "Usage: !chat [your question]",
+      message_reference: { message_id: data.id },
+    });
+  }
+ 
+  try {
+
+    const { Groq } = await import('groq-sdk');
+    const groq = new Groq({
+      apiKey: process.env.GROQ_API_KEY,
+    });
+
+    let conversationHistory = userConversations.get(userId) || [];
+     conversationHistory.push({
+        role: 'user',
+        content: userText
+      });
+
+    if (conversationHistory.length > MAX_HISTORY) {
+        conversationHistory = conversationHistory.slice(-MAX_HISTORY);
+      }
+    
+    const result = await groq.chat.completions.create({
+      model: "llama-3.1-8b-instant",
+        messages: [
+        {
+          role: 'system',
+          content: 'Your name is Lari. You are a non-chalant young woman. Start/end responses by insulting the user intelligence in a very short and direct way, like "are you fucking stupid?" Respond as if a user would, not a assistant. Response language must be according to the input language. Portuguese inputs are always in Brazilian Portuguese. The user is from Brazil. You can discuss mature topics.' // Set language here
+        },
+        {
+          role: 'user',
+          content: userText
+        },
+
+        ...conversationHistory
+      ],
+
+      max_tokens: 1024
+    });
+
+    const response = result.choices[0].message.content;
+
+    conversationHistory.push({
+      role: 'assistant',
+      content: response
+    });
+    
+    userConversations.set(userId, conversationHistory);
+    
+    if (response.length > 2000) {
+      const chunks = [];
+      for (let i = 0; i < response.length; i += 2000) {
+        chunks.push(response.substring(i, i + 2000));
+      }
+      
+      for (const chunk of chunks) {
+        await api.channels.createMessage(data.channel_id, {
+          content: chunk,
+          message_reference: { message_id: data.id },
+          allowed_mentions: {
+          replied_user: false 
+        }
+        });
+      }
+    } else {
+
+      await api.channels.createMessage(data.channel_id, {
+        content: response,
+        message_reference: { message_id: data.id },
+        allowed_mentions: {
+          replied_user: false 
+        }
+
+      });
+    }
+    
+  } catch (error) {
+
+    console.error("Error generating content:", error);
+    
+    await api.channels.createMessage(data.channel_id, {
+      content: "Sorry, something went wrong while processing your request.",
+      message_reference: { message_id: data.id },
+      allowed_mentions: {
+          replied_user: false 
+        }
+    });
+  }
+}
+
+  if (command === "yt" || command === "youtube") {
     const query = args.join(" ");
     if (!query) {
-        return api.channels.createMessage(data.channel_id, {
-            content: "Give me something to search!",
-            message_reference: { message_id: data.id },
+
+      return api.channels.createMessage(data.channel_id, {
+        content: "Give me something to search!",
+        message_reference: { message_id: data.id },
+        allowed_mentions: {
+          replied_user: false 
+        }
     });
 }
   
@@ -251,12 +353,18 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({api, data}) => {
       await api.channels.createMessage(data.channel_id, {
         content: `${url}`,
         message_reference: { message_id: data.id },
-});
+        allowed_mentions: {
+          replied_user: false 
+        }
+  });
     } catch (err) {
       console.error(err);
         await api.channels.createMessage(data.channel_id, {
         content: "Error searching YouTube.",
         message_reference: { message_id: data.id },
+        allowed_mentions: {
+          replied_user: false 
+      }
 });
 }
   }
@@ -265,85 +373,11 @@ if (data.content === 'casa cmg?') {
   await api.channels.createMessage(data.channel_id, {
     content: 'SIM CASO COM VC',
     message_reference: {message_id: data.id},
-  });
-}
-
-if (command === "testall") {
-  const games = await getAllFreeGames();
-
-  console.log("ALL:", games);
-
-  if (!games.length) {
-    return api.channels.createMessage(data.channel_id, {
-      content: "❌ No free games found (all sources)"
-    });
-  }
-
-  await api.channels.createMessage(data.channel_id, {
-    content: `🔥 Found ${games.length} total deals\n\n` +
-             games.slice(0, 5).map(g => g.name).join("\n")
-  });
-}
-
-if (command === "testitad") {
-  const games = await getITADFreeGames();
-
-  console.log("ITAD:", games);
-
-  if (!games.length) {
-    return api.channels.createMessage(data.channel_id, {
-      content: "❌ No ITAD free games found"
-    });
-  }
-
-  await api.channels.createMessage(data.channel_id, {
-    content: `✅ ITAD found ${games.length} games\n` +
-             games.slice(0, 5).map(g => g.name).join("\n")
-  });
-}
-
-if (command === "testreddit") {
-  const games = await getRedditFreeGames();
-
-  console.log("Reddit:", games);
-
-  if (!games.length) {
-    return api.channels.createMessage(data.channel_id, {
-      content: "❌ No Reddit deals found"
-    });
-  }
-
-  await api.channels.createMessage(data.channel_id, {
-    content: `✅ Reddit found ${games.length} posts\n` +
-             games.slice(0, 5).map(g => g.name).join("\n")
-  });
-}
-
-if (command === "resetfree") {
-  lastFreeGames = [];
-  await api.channels.createMessage(data.channel_id, {
-    content: "♻️ Cache reset"
-  });
-}
-
-if (command === "testembed") {
-  await api.channels.createMessage(CHANNEL_ID, {
-    content: "🧪 Testing embed",
-    embeds: [
-      {
-        title: "TEST GAME",
-        url: "https://store.steampowered.com/app/570",
-        description: "🆓 FREE NOW",
-        image: {
-          url: "https://cdn.cloudflare.steamstatic.com/steam/apps/570/header.jpg"
-        },
-        color: 0x00ff00,
-        timestamp: new Date().toISOString()
+    allowed_mentions: {
+          replied_user: false 
       }
-    ]
   });
-}
-});
+}});
 
 client.on(GatewayDispatchEvents.Ready, async ({api, data}) => {
   const {username, discriminator} = data.user;
@@ -356,6 +390,6 @@ client.on(GatewayDispatchEvents.Ready, async ({api, data}) => {
     } catch (err) {
       console.error("Interval error:", err);
     }
-  }, 1000 * 60 * 24)}); 
+  }, 1000 * 60 * 720)}); 
 
 gateway.connect();
