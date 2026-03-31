@@ -117,6 +117,18 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
       await handleYoutube(api, data, args, clients);
     } else if (command === "analyze" || command === "analise") {
       await handleGrokAnalyze(api, data, args, userConversations, clients);
+    } else if (command === "help") {
+      await api.channels.createMessage(data.channel_id, {
+        content: `Available commands:\n
+        !search [query] - Search the web using DuckDuckGo\n
+        !grok [question] - Ask Groq a question or have a conversation\n
+        !img [query] - Search for images using Pexels\n
+        !yt [query] - Search for YouTube videos\n
+        !analyze [question] (with image attachment) - Analyze an image with Groq\n
+        !help - Show this help message`,
+        message_reference: { message_id: data.id },
+        allowed_mentions: { replied_user: false },
+      });
     }
   } catch (error) {
     console.error("Command error:", error);
