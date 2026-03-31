@@ -120,11 +120,20 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
     } else if (command === "help") {
       await api.channels.createMessage(data.channel_id, {
         content: `Available commands:\n
-        !search [query] - Search the web using DuckDuckGo\n
+
+        Generative AI commands:\n
+
+        !analyze or !analise [attachment] - Analyze an image with Groq\n
         !grok [question] - Ask Groq a question or have a conversation\n
+        
+        General search commands:\n
+
+        !search [query] - Search the web using DuckDuckGo\n
         !img [query] - Search for images using Pexels\n
-        !yt [query] - Search for YouTube videos\n
-        !analyze [question] (with image attachment) - Analyze an image with Groq\n
+        !yt or !youtube [query] - Search for YouTube videos\n
+
+        Other commands:\n
+
         !help - Show this help message`,
         message_reference: { message_id: data.id },
         allowed_mentions: { replied_user: false },
