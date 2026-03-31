@@ -119,13 +119,16 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
       await handleGrokAnalyze(api, data, args, userConversations, clients);
     } else if (command === "help") {
       await api.channels.createMessage(data.channel_id, {
-        content: `Available commands:\n
+        embeds: [
+          {
+            title: "Available commands",
+            description: `
 
         Generative AI commands:\n
 
         !analyze or !analise [attachment] - Analyze an image with Groq\n
         !grok [question] - Ask Groq a question or have a conversation\n
-        
+
         General search commands:\n
 
         !search [query] - Search the web using DuckDuckGo\n
@@ -137,6 +140,8 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
         !help - Show this help message`,
         message_reference: { message_id: data.id },
         allowed_mentions: { replied_user: false },
+          },
+        ],
       });
     }
   } catch (error) {

@@ -64,6 +64,9 @@ export async function handleGrok(
           message_reference: { message_id: data.id },
           allowed_mentions: { replied_user: false },
         });
+
+          await new Promise(resolve => setTimeout(resolve, 500));
+
       }
     } else {
       await api.channels.createMessage(data.channel_id, {
@@ -137,7 +140,6 @@ export async function handleGrokAnalyze(
     const response = await clients.groq.chat.completions.create({
       model: "meta-llama/llama-4-scout-17b-16e-instruct",
       messages: [
-        
         ...conversationHistory,
         {
           role: "user",
@@ -165,7 +167,15 @@ export async function handleGrokAnalyze(
     userConversation_ref.set(userId, conversationHistory);
 
     await api.channels.createMessage(data.channel_id, {
-      content: result,
+      embeds: [
+        {
+          title: "Image Analysis",
+          description: result,
+          color: 0x5865f2,
+          footer: { text: "Analyzed with Groq" },
+          timestamp: new Date().toISOString(),
+        },
+      ],
       message_reference: { message_id: data.id },
       allowed_mentions: { replied_user: false },
     });
