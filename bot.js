@@ -118,7 +118,7 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
       await handleYoutube(api, data, args, clients);
     } else if (command === "analyze" || command === "analise") {
       await handleGrokAnalyze(api, data, args, userConversations, clients);
-    } else if (command === "checkfree" || "check")
+    } else if (command === "checkfree" || command === "check") {
       await checkFreeGames(api);
     } else if (command === "help") {
       await api.channels.createMessage(data.channel_id, {
