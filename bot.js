@@ -19,7 +19,7 @@ if (!token) {
   throw new Error("You forgot the token!");
 }
 
-const clients = {
+export const clients = {
   groq: new Groq({ apiKey: process.env.GROQ_API_KEY }),
   pexelsKey: process.env.PEXELS_API_KEY,
   itadKey: process.env.ITAD_API_KEY,

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { clients } from "../bot.js";
 
 const CHANNEL_ID = "1484334210085946326";
 let lastFreeGames = [];
@@ -59,7 +60,7 @@ async function getITADFreeGames() {
         const price = game.deal?.price?.amount ?? 999;
         const cut = game.deal?.cut ?? 0;
 
-        return price === 0 || cut === 100;
+        return price === 0 || price < 5 || cut === 100;
       })
       .map(game => ({
         id: game.id,
@@ -94,14 +95,13 @@ async function checkFreeGames(api) {
   try {
     const current = await getAllFreeGames();
 
-    if (lastFreeGames.length === 0) {
-      lastFreeGames = current;
-      return;
-    }
+    const isFirstRun = lastFreeGames.length === 0;
 
-    const newGames = current.filter(
-      g => !lastFreeGames.some(p => p.id === g.id)
-    );
+    const newGames = isFirstRun
+      ? current 
+      : current.filter(
+          g => !lastFreeGames.some(p => p.id === g.id)
+        );
 
     if (newGames.length > 0) {
       const description = newGames.slice(0, 5).map(game =>
@@ -111,7 +111,9 @@ async function checkFreeGames(api) {
       await api.channels.createMessage(CHANNEL_ID, {
         embeds: [
           {
-            title: "**New Free Steam Games!**",
+            title: isFirstRun
+              ? "**Current Free Games **"
+              : "**New Free Steam Games! **",
             description,
             color: 0x00ff00,
             timestamp: new Date().toISOString()
@@ -121,13 +123,20 @@ async function checkFreeGames(api) {
     }
 
     lastFreeGames = current;
+    return newGames;
+
   } catch (err) {
     console.error("checkFreeGames error:", err);
+    return [];
   }
 }
 
-export async function handleFreeGames(api, data, args, clients) {
-  await checkFreeGames(api);
+export async function handleFreeGames(api) {
+  const newGames = await checkFreeGames(api);
+  console.log("Checked for free games");
+  console.log("Current free games:", lastFreeGames.map(g => g.name).join(", "));
+  console.log("New free games:", lastFreeGames.length);
+  console.log(newGames);
 }
 
 export function startFreeGamesChecker(api) {
@@ -137,5 +146,5 @@ export function startFreeGamesChecker(api) {
     } catch (err) {
       console.error("Interval error:", err);
     }
-  }, 1000 * 60 * 240); 
+  }, 1000 * 60 * 360); 
 }
