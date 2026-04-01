@@ -6,7 +6,7 @@ import { handleGrok } from "./commands/grok.js";
 import { handleGrokAnalyze } from './commands/grok.js';
 import { handleImgSearch } from "./commands/imgSearch.js";
 import { startFreeGamesChecker } from "./commands/freeGames.js";
-import { checkFreeGames } from "./commands/freeGames.js";
+import { handleFreeGames } from "./commands/freeGames.js";
 import { handleYoutube } from "./commands/youtube.js";
 import { Groq } from "groq-sdk";
 import "dotenv/config";
@@ -119,7 +119,7 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
     } else if (command === "analyze" || command === "analise") {
       await handleGrokAnalyze(api, data, args, userConversations, clients);
     } else if (command === "checkfree" || command === "check") {
-      await checkFreeGames(api);
+      await handleFreeGames(api, data, args, clients)
     } else if (command === "help") {
       await api.channels.createMessage(data.channel_id, {
         embeds: [
