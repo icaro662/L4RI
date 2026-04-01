@@ -137,5 +137,5 @@ export function startFreeGamesChecker(api) {
     } catch (err) {
       console.error("Interval error:", err);
     }
-  }, 1000 * 60 * 720); 
+  }, 1000 * 60 * 240); 
 }
