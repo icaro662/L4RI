@@ -137,6 +137,7 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
         !search [query] - Search the web using DuckDuckGo\n
         !img [query] - Search for images using Pexels\n
         !yt or !youtube [query] - Search for YouTube videos\n
+        !check or !checkfree - Check for new free games (Steam, Epic)\n
 
         Other commands:\n
 
