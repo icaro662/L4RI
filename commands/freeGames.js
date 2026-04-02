@@ -111,7 +111,7 @@ async function checkFreeGames(api) {
           {
             title: isFirstRun
               ? "**Current Free Games **"
-              : "**New Free Steam Games! **",
+              : "**New Free Games! **",
             description,
             color: 0x00ff00,
             timestamp: new Date().toISOString(),
