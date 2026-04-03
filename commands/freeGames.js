@@ -18,7 +18,7 @@ async function getRedditFreeGames() {
     "https://www.reddit.com/r/GameDeals/new.json?limit=25",
     {
       headers: {
-        "User-Agent": "fluxer-bot:l4ri:v1.0 (by /u/misha)"
+        "User-Agent": "fluxer-bot:l4ri:v1.0 (by /u/misha)",
       },
     },
   );
@@ -50,20 +50,20 @@ async function getRedditFreeGames() {
 
 async function getITADFreeGames() {
   try {
-    const res = await axios.get(
-      "https://api.isthereanydeal.com/deals/v2",
-      {
-        params: {
-          key: clients.itadKey,
-          country: "BR",
-        },
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
-          "Accept": "application/json",
-        },
-      }
-    );
+    const res = await axios.get("https://api.isthereanydeal.com/deals/v2", {
+      params: {
+        key: clients.itadKey,
+        country: "BR",
+      },
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
+        Accept: "application/json",
+        "Accept-Language": "en-US,en;q=0.9",
+        Connection: "keep-alive",
+      },
+      timeout: 10000,
+    });
 
     return res.data;
   } catch (err) {
