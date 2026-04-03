@@ -50,28 +50,24 @@ async function getRedditFreeGames() {
 
 async function getITADFreeGames() {
   try {
-    const res = await axios.get("https://api.isthereanydeal.com/deals/v2", {
-      params: {
-        key: clients.itadKey,
-        country: "BR",
-      },
-    });
+    const res = await axios.get(
+      "https://api.isthereanydeal.com/deals/v2",
+      {
+        params: {
+          key: clients.itadKey,
+          country: "BR",
+        },
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
+          "Accept": "application/json",
+        },
+      }
+    );
 
-    return res.data.list
-      .filter((game) => {
-        const price = game.deal?.price?.amount ?? 999;
-        const cut = game.deal?.cut ?? 0;
-
-        return price === 0 || price < 5 || cut === 100;
-      })
-      .map((game) => ({
-        id: game.id,
-        name: game.title,
-        url: game.deal?.url,
-      }));
+    return res.data;
   } catch (err) {
-    console.error("ITAD error:", err.response?.data || err.message);
-    return [];
+    console.error(err.response?.status, err.response?.data);
   }
 }
 
