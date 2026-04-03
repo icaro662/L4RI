@@ -8,7 +8,7 @@ async function safeFetch(fn) {
   try {
     return await fn();
   } catch (err) {
-    console.error("Fetch failed:", err.message);
+    console.error(err.response?.status, err.response?.data);
     return [];
   }
 }
@@ -28,18 +28,15 @@ async function getRedditFreeGames() {
   return posts
     .map((p) => p.data)
     .filter((post) => {
-      const title = post.title.toLowerCase();
+      const title = post.title;
 
-      return (
-        (title.includes("free") ||
-          title.includes("100%") ||
-          title.includes("100% off")) &&
-        !title.includes("weekend") &&
-        !title.includes("free trial") &&
-        (title.includes("steam") ||
-          title.includes("epic") ||
-          title.includes("gog"))
-      );
+      const isFree =
+        /(\b100%\b|\bfree\b)/i.test(title) &&
+        !/weekend|trial|beta|demo/i.test(title);
+
+      const isStore = /(steam|epic|gog)/i.test(title);
+
+      return isFree && isStore;
     })
     .map((post) => ({
       id: "reddit_" + post.id,
@@ -65,10 +62,24 @@ async function getITADFreeGames() {
       timeout: 10000,
     });
 
-    return res.data;
+    return (
+      res.data?.list?.map((deal) => ({
+        id: "itad_" + deal.id,
+        name: deal.title,
+        url: deal.url,
+      })) || []
+    );
   } catch (err) {
     console.error(err.response?.status, err.response?.data);
   }
+}
+
+function normalizeName(name) {
+  return name
+    .toLowerCase()
+    .replace(/\[.*?\]/g, "")
+    .replace(/\(.*?\)/g, "")
+    .trim();
 }
 
 async function getAllFreeGames() {
@@ -80,7 +91,7 @@ async function getAllFreeGames() {
   const combined = [...itad, ...reddit];
 
   const unique = Object.values(
-    Object.fromEntries(combined.map((g) => [g.name.toLowerCase(), g])),
+    Object.fromEntries(combined.map((g) => [normalizeName(g.name), g])),
   );
 
   return unique;
