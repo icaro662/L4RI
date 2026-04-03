@@ -63,11 +63,14 @@ async function getITADFreeGames() {
     });
 
     return (
-      res.data?.list?.map((deal) => ({
-        id: "itad_" + deal.id,
-        name: deal.title,
-        url: deal.url,
-      })) || []
+      res.data?.list
+      .filter((deal) => deal.price_new === 0)
+        ?.map((deal) => ({
+          id: "itad_" + deal.id,
+          name: deal.title,
+          url: deal.deal?.url || deal.url || null,
+        }))
+        .filter((g) => g.url && g.name) || []
     );
   } catch (err) {
     console.error(err.response?.status, err.response?.data);
