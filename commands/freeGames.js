@@ -2,47 +2,72 @@ import axios from "axios";
 import { clients } from "../bot.js";
 
 const CHANNEL_ID = "1484334210085946326";
+
 let lastFreeGames = [];
 
-async function safeFetch(fn) {
+let redditCache = [];
+let lastRedditFetch = 0;
+
+let combinedCache = [];
+
+function normalizeName(name) {
+  return name.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+async function safeFetch(fn, label) {
   try {
     return await fn();
   } catch (err) {
-    console.error(err.response?.status, err.response?.data);
+    console.error(`${label} failed:`, err.message);
     return [];
   }
 }
 
 async function getRedditFreeGames() {
-  const res = await axios.get(
-    "https://www.reddit.com/r/GameDeals/new.json?limit=25",
-    {
+  if (Date.now() - lastRedditFetch < 5 * 60 * 1000) {
+    return redditCache;
+  }
+
+  try {
+    const res = await axios.get("https://api.reddit.com/r/GameDeals/new", {
+      params: { limit: 25 },
       headers: {
-        "User-Agent": "fluxer-bot:l4ri:v1.0 (by /u/misha)",
+        "User-Agent": "fluxer-bot/1.0 (by u/misha)",
       },
-    },
-  );
+    });
 
-  const posts = res.data.data.children;
+    if (!res.data?.data?.children) {
+      console.warn("Reddit blocked or invalid response");
+      return redditCache;
+    }
 
-  return posts
-    .map((p) => p.data)
-    .filter((post) => {
-      const title = post.title;
+    const result = res.data.data.children
+      .map((p) => p.data)
+      .filter((post) => {
+        const title = post.title;
 
-      const isFree =
-        /(\b100%\b|\bfree\b)/i.test(title) &&
-        !/weekend|trial|beta|demo/i.test(title);
+        const isFree = /free|100%|\$0|0\.00/i.test(title);
+        const notJunk = !/trial|beta|demo|weekend/i.test(title);
+        const isStore = /steam|epic|gog/i.test(title);
 
-      const isStore = /(steam|epic|gog)/i.test(title);
+        return isFree && notJunk && isStore;
+      })
+      .map((post) => ({
+        id: "reddit_" + post.id,
+        name: post.title,
+        url: post.url,
+        source: "reddit",
+      }))
+      .filter((g) => g.url && g.name);
 
-      return isFree && isStore;
-    })
-    .map((post) => ({
-      id: "reddit_" + post.id,
-      name: post.title,
-      url: post.url,
-    }));
+    redditCache = result;
+    lastRedditFetch = Date.now();
+
+    return result;
+  } catch (err) {
+    console.error("Reddit error:", err.response?.status);
+    return redditCache;
+  }
 }
 
 async function getITADFreeGames() {
@@ -52,50 +77,54 @@ async function getITADFreeGames() {
         key: clients.itadKey,
         country: "BR",
       },
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
-        Accept: "application/json",
-        "Accept-Language": "en-US,en;q=0.9",
-        Connection: "keep-alive",
-      },
-      timeout: 10000,
     });
 
-    return (
-      res.data?.list
-      .filter((deal) => deal.price_new === 0)
-        ?.map((deal) => ({
-          id: "itad_" + deal.id,
-          name: deal.title,
-          url: deal.deal?.url || deal.url || null,
-        }))
-        .filter((g) => g.url && g.name) || []
-    );
-  } catch (err) {
-    console.error(err.response?.status, err.response?.data);
-  }
-}
+    const deals = res.data?.list || [];
 
-function normalizeName(name) {
-  return name
-    .toLowerCase()
-    .replace(/\[.*?\]/g, "")
-    .replace(/\(.*?\)/g, "")
-    .trim();
+    console.log("ITAD RAW:", deals.length);
+
+    return deals
+      .filter((deal) => deal.price_new === 0)
+      .map((deal) => ({
+        id: "itad_" + deal.id,
+        name: deal.title,
+        url: deal.deal?.url || null,
+        source: "itad",
+      }))
+      .filter((g) => g.url && g.name);
+  } catch (err) {
+    console.error("ITAD error:", err.response?.status);
+    return [];
+  }
 }
 
 async function getAllFreeGames() {
   const [itad, reddit] = await Promise.all([
-    safeFetch(getITADFreeGames),
-    safeFetch(getRedditFreeGames),
+    safeFetch(getITADFreeGames, "ITAD"),
+    safeFetch(getRedditFreeGames, "Reddit"),
   ]);
+
+  console.log("Sources:", {
+    itad: itad.length,
+    reddit: reddit.length,
+  });
 
   const combined = [...itad, ...reddit];
 
   const unique = Object.values(
-    Object.fromEntries(combined.map((g) => [normalizeName(g.name), g])),
+    Object.fromEntries(
+      combined.filter((g) => g?.name).map((g) => [normalizeName(g.name), g]),
+    ),
   );
+
+  if (unique.length === 0 && combinedCache.length > 0) {
+    console.warn("Using cached results");
+    return combinedCache;
+  }
+
+  if (unique.length > 0) {
+    combinedCache = unique;
+  }
 
   return unique;
 }
@@ -113,15 +142,13 @@ async function checkFreeGames(api) {
     if (newGames.length > 0) {
       const description = newGames
         .slice(0, 5)
-        .map((game) => `[${game.name}](${game.url})\n`)
+        .map((g) => `[${g.name}](${g.url})`)
         .join("\n\n");
 
       await api.channels.createMessage(CHANNEL_ID, {
         embeds: [
           {
-            title: isFirstRun
-              ? "**Current Free Games **"
-              : "**New Free Games! **",
+            title: isFirstRun ? "Current Free Games" : "New Free Games",
             description,
             color: 0x00ff00,
             timestamp: new Date().toISOString(),
@@ -131,6 +158,7 @@ async function checkFreeGames(api) {
     }
 
     lastFreeGames = current;
+
     return newGames;
   } catch (err) {
     console.error("checkFreeGames error:", err);
@@ -140,24 +168,17 @@ async function checkFreeGames(api) {
 
 export async function handleFreeGames(api) {
   const newGames = await checkFreeGames(api);
+
   console.log("Checked for free games");
-  console.log(
-    "Current free games:",
-    lastFreeGames.map((g) => g.name).join(", "),
-  );
-  console.log("New free games:", lastFreeGames.length);
-  console.log(newGames);
+  console.log("Current:", lastFreeGames.map((g) => g.name).join(", "));
+  console.log("New:", newGames.length);
 }
 
 export function startFreeGamesChecker(api) {
   setInterval(
-    async () => {
-      try {
-        await checkFreeGames(api);
-      } catch (err) {
-        console.error("Interval error:", err);
-      }
+    () => {
+      checkFreeGames(api).catch((err) => console.error("Interval error:", err));
     },
     1000 * 60 * 360,
-  );
+  ); // every 6 hours
 }
