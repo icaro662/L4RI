@@ -110,9 +110,9 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
   if (data.content.startsWith(MENTION)) {
     const question = data.content.replace(MENTION, "").trim();
     await handleGrok(api, data, [question], userConversations, clients);
-    if (data.attachments && data.attachments.length > 0) {
-      await handleGrokAnalyze(api, data, [question], userConversations, clients);
-    }
+  } else if (data.content.startsWith(MENTION) && data.attachments && data.attachments.length > 0) {
+    const question = data.content.replace(MENTION, "").trim();
+    await handleGrokAnalyze(api, data, [question], userConversations, clients);
   }
 
   if (data.content.startsWith(PREFIX)) {
