@@ -78,7 +78,7 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
     return;
   }
 
-  if (!data.content.startsWith(PREFIX)) {
+  if (!data.content.startsWith(PREFIX) && !data.content.includes("http")) {
     const urls = extractUrls(data.content);
 
     if (urls.length > 0) {
@@ -102,6 +102,10 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
       }
       return;
     }
+  }
+
+  if (!data.content.startsWith(PREFIX)) {
+    return;
   }
 
   const args = data.content.slice(PREFIX.length).trim().split(" ");
