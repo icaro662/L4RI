@@ -108,7 +108,7 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
   }
 
   if (data.content.startsWith(MENTION)) {
-    
+
     try {
       if (data.attachments && data.attachments.length > 0) {
         const question = data.content.replace(MENTION, "").trim();
@@ -145,7 +145,7 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
 
           Generative AI commands:\n
 
-          @bot analyze or @bot analise [attachment] - Analyze an image with Groq\n
+          @bot [attachment] [question] - Analyze an image with Groq\n
           @bot [question] - Ask Groq a question or have a conversation\n
 
           General search commands:\n
