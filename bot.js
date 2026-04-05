@@ -24,6 +24,7 @@ export const clients = {
   pexelsKey: process.env.PEXELS_API_KEY,
   itadKey: process.env.ITAD_API_KEY,
   youtubeKey: process.env.YOUTUBE_API_KEY,
+  botId: "1483928797831864671",
 };
 
 Object.entries(clients).forEach(([name, key]) => {
@@ -74,11 +75,13 @@ function getEmbedVariants(url) {
 const client = new Client({ rest, gateway });
 
 client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
+  const botId = clients.botId;
+  const MENTION = data.content.startsWith(`<@${botId}>`)
+    ? `<@${botId}>`
+    : `<@!${botId}>`;
   if (data.author.bot) {
     return;
-  }
-
-  if (!data.content.startsWith(PREFIX) && !data.content.includes("http")) {
+  } else if (!data.content.startsWith(PREFIX) && data.content.includes("http")) {
     const urls = extractUrls(data.content);
 
     if (urls.length > 0) {
@@ -104,56 +107,57 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
     }
   }
 
-  if (!data.content.startsWith(PREFIX)) {
-    return;
+  if (data.content.startsWith(MENTION)) {
+    const question = data.content.replace(MENTION, "").trim();
+    await handleGrok(api, data, [question], userConversations, clients);
   }
 
-  const args = data.content.slice(PREFIX.length).trim().split(" ");
-  const command = args.shift().toLowerCase();
+  if (data.content.startsWith(PREFIX)) {
+    const args = data.content.slice(PREFIX.length).trim().split(" ");
+    const command = args.shift().toLowerCase();
 
-  try {
-    if (command === "search") {
-      await handleSearch(api, data, args);
-    } else if (command === "grok") {
-      await handleGrok(api, data, args, userConversations, clients);
-    } else if (command === "img") {
-      await handleImgSearch(api, data, args, clients);
-    } else if (command === "yt" || command === "youtube") {
-      await handleYoutube(api, data, args, clients);
-    } else if (command === "analyze" || command === "analise") {
-      await handleGrokAnalyze(api, data, args, userConversations, clients);
-    } else if (command === "checkfree" || command === "check") {
-      await handleFreeGames(api, data, args, clients)
-    } else if (command === "help") {
-      await api.channels.createMessage(data.channel_id, {
-        embeds: [
-          {
-            title: "Available commands",
-            description: `
+    try {
+      if (command === "search") {
+        await handleSearch(api, data, args);
+      } else if (command === "img") {
+        await handleImgSearch(api, data, args, clients);
+      } else if (command === "yt" || command === "youtube") {
+        await handleYoutube(api, data, args, clients);
+      } else if (command === "analyze" || command === "analise") {
+        await handleGrokAnalyze(api, data, args, userConversations, clients);
+      } else if (command === "checkfree" || command === "check") {
+        await handleFreeGames(api, data, args, clients)
+      } else if (command === "help") {
+        await api.channels.createMessage(data.channel_id, {
+          embeds: [
+            {
+              title: "Available commands",
+              description: `
 
-        Generative AI commands:\n
+          Generative AI commands:\n
 
-        !analyze or !analise [attachment] - Analyze an image with Groq\n
-        !grok [question] - Ask Groq a question or have a conversation\n
+          !analyze or !analise [attachment] - Analyze an image with Groq\n
+          !grok [question] - Ask Groq a question or have a conversation\n
 
-        General search commands:\n
+          General search commands:\n
 
-        !search [query] - Search the web using DuckDuckGo\n
-        !img [query] - Search for images using Pexels\n
-        !yt or !youtube [query] - Search for YouTube videos\n
-        !check or !checkfree - Check for new free games (Steam, Epic)\n
+          !search [query] - Search the web using DuckDuckGo\n
+          !img [query] - Search for images using Pexels\n
+          !yt or !youtube [query] - Search for YouTube videos\n
+          !check or !checkfree - Check for new free games (Steam, Epic)\n
 
-        Other commands:\n
+          Other commands:\n
 
-        !help - Show this help message`,
-        message_reference: { message_id: data.id },
-        allowed_mentions: { replied_user: false },
-          },
-        ],
-      });
+          !help - Show this help message`,
+          message_reference: { message_id: data.id },
+          allowed_mentions: { replied_user: false },
+            },
+          ],
+        });
+      }
+    } catch (error) {
+      console.error("Command error:", error);
     }
-  } catch (error) {
-    console.error("Command error:", error);
   }
 
   if (data.content === "casa cmg?") {
