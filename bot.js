@@ -108,12 +108,20 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
   }
 
   if (data.content.startsWith(MENTION)) {
-    const question = data.content.replace(MENTION, "").trim();
-    await handleGrok(api, data, [question], userConversations, clients);
-  } else if (data.content.startsWith(MENTION) && data.attachments && data.attachments.length > 0) {
-    const question = data.content.replace(MENTION, "").trim();
-    await handleGrokAnalyze(api, data, [question], userConversations, clients);
-  }
+    
+    try {
+      if (data.attachments && data.attachments.length > 0) {
+        const question = data.content.replace(MENTION, "").trim();
+        await handleGrokAnalyze(api, data, [question], userConversations, clients);
+      } else {
+        const question = data.content.replace(MENTION, "").trim();
+        await handleGrok(api, data, [question], userConversations, clients);
+      }
+
+    } catch (error) {
+      console.error("Unexpected error:", error);
+    }
+  } 
 
   if (data.content.startsWith(PREFIX)) {
     const args = data.content.slice(PREFIX.length).trim().split(" ");
@@ -145,7 +153,7 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
           !search [query] - Search the web using DuckDuckGo\n
           !img [query] - Search for images using Pexels\n
           !yt or !youtube [query] - Search for YouTube videos\n
-          !check or !checkfree - Check for new free games (Steam, Epic)\n
+          !check or !checkfree - Check for new free games (Steam, Epic, GOG, NewEgg)\n
 
           Other commands:\n
 
