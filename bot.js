@@ -110,6 +110,9 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
   if (data.content.startsWith(MENTION)) {
     const question = data.content.replace(MENTION, "").trim();
     await handleGrok(api, data, [question], userConversations, clients);
+    if (data.attachments && data.attachments.length > 0) {
+      await handleGrokAnalyze(api, data, [question], userConversations, clients);
+    }
   }
 
   if (data.content.startsWith(PREFIX)) {
@@ -123,8 +126,6 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
         await handleImgSearch(api, data, args, clients);
       } else if (command === "yt" || command === "youtube") {
         await handleYoutube(api, data, args, clients);
-      } else if (command === "analyze" || command === "analise") {
-        await handleGrokAnalyze(api, data, args, userConversations, clients);
       } else if (command === "checkfree" || command === "check") {
         await handleFreeGames(api, data, args, clients)
       } else if (command === "help") {
@@ -136,8 +137,8 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
 
           Generative AI commands:\n
 
-          !analyze or !analise [attachment] - Analyze an image with Groq\n
-          !grok [question] - Ask Groq a question or have a conversation\n
+          @bot analyze or @bot analise [attachment] - Analyze an image with Groq\n
+          @bot [question] - Ask Groq a question or have a conversation\n
 
           General search commands:\n
 
