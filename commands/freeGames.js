@@ -27,7 +27,7 @@ async function getRedditFreeGames() {
   }
 
   try {
-    const res = await axios.get("https://api.reddit.com/r/GameDeals/best", {
+    const res = await axios.get("https://www.reddit.com/r/GameDeals/new.json", {
       params: { limit: 25 },
       headers: {
         "User-Agent": "fluxer-bot/1.0 (by u/misha)",
