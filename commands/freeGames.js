@@ -148,9 +148,20 @@ async function checkFreeGames(api) {
       await api.channels.createMessage(CHANNEL_ID, {
         embeds: [
           {
-            title: isFirstRun ? "Current Free Games" : "New Free Games",
+            title: isFirstRun ? "Current Promotions" : "New Promotions Found!",
             description,
             color: 0x00ff00,
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      });
+    } else {
+      await api.channels.createMessage(CHANNEL_ID, {
+        embeds: [
+          {
+            title: "Checked for Promotions",
+            description: "No new free games found.",
+            color: 0xffff00,
             timestamp: new Date().toISOString(),
           },
         ],
@@ -169,9 +180,16 @@ async function checkFreeGames(api) {
 export async function handleFreeGames(api) {
   const newGames = await checkFreeGames(api);
 
-  console.log("Checked for free games");
-  console.log("Current:", lastFreeGames.map((g) => g.name).join(", "));
-  console.log("New:", newGames.length);
+  await api.channels.createMessage(CHANNEL_ID, {
+    embeds: [
+      {
+        title: "Checked for Promotions",
+        description: `Current: ${lastFreeGames.length} free games\nNew: ${newGames.length} new free games`,
+        color: 0x00ff00,
+        timestamp: new Date().toISOString(),
+      },
+    ],
+  });
 }
 
 export function startFreeGamesChecker(api) {
