@@ -8,6 +8,7 @@ import { handleImgSearch } from "./commands/imgSearch.js";
 import { startFreeGamesChecker } from "./commands/freeGames.js";
 import { handleFreeGames } from "./commands/freeGames.js";
 import { handleYoutube } from "./commands/youtube.js";
+import { handleCopyPastaBR } from "./commands/funUtils.js";
 import { Groq } from "groq-sdk";
 import "dotenv/config";
 
@@ -135,7 +136,9 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
         await handleYoutube(api, data, args, clients);
       } else if (command === "checkfree" || command === "check") {
         await handleFreeGames(api, data, args, clients)
-      } else if (command === "help") {
+      } else if (command === "copypasta") {
+        await handleCopyPastaBR(api, data, args, clients);
+     } else if (command === "help") {
         await api.channels.createMessage(data.channel_id, {
           embeds: [
             {
