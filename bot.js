@@ -5,7 +5,8 @@ import { handleSearch } from "./commands/search.js";
 import { handleGrok } from "./commands/grok.js";
 import { handleGrokAnalyze } from './commands/grok.js';
 import { handleImgSearch } from "./commands/imgSearch.js";
-import { startFreeGamesChecker } from "./commands/freeGames.js";
+import { freeGamesInterval } from "./commands/freeGames.js";
+import { postFetchInterval } from "./commands/funUtils.js";
 import { handleFreeGames } from "./commands/freeGames.js";
 import { handleYoutube } from "./commands/youtube.js";
 import { handleCopyPastaBR } from "./commands/funUtils.js";
@@ -24,6 +25,7 @@ export const clients = {
   groq: new Groq({ apiKey: process.env.GROQ_API_KEY }),
   pexelsKey: process.env.PEXELS_API_KEY,
   youtubeKey: process.env.YOUTUBE_API_KEY,
+  rapidApiKey: process.env.RAPID_API_KEY,
   botId: "1483928797831864671",
 };
 
@@ -184,7 +186,8 @@ client.on(GatewayDispatchEvents.Ready, async ({ api, data }) => {
   const { username, discriminator } = data.user;
   console.log(`Logged in as @${username}#${discriminator}`);
 
-  startFreeGamesChecker(api);
+  postFetchInterval();
+  freeGamesInterval(api);
 });
 
 gateway.connect();

@@ -27,13 +27,12 @@ async function getRedditFreeGames() {
   }
 
   try {
-    const res = await axios.get("https://www.reddit.com/r/GameDeals/new.json?limit=25", {
+    const res = await axios.get("https://reddit34.p.rapidapi.com/getPostsBySubreddit?subreddit=GameDeals&sort=new", {
       headers: {
-        "User-Agent": "web:Fluxer-tool:1.0 (by /u/misha)",
-        "Accept": "application/json",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Connection": "keep-alive"
-      },
+          "Content-Type": "application/json",
+          "x-rapidapi-host": "reddit34.p.rapidapi.com",
+          "x-rapidapi-key": clients.rapidApiKey,
+        },
     })
     console.log(res.config.headers);
     console.log("Reddit API response status:", res.status);
@@ -43,16 +42,17 @@ async function getRedditFreeGames() {
       return redditCache;
     }
 
-    const result = res.data.data.children
+    const result = res.data.data.posts
       .map((p) => p.data)
       .filter((post) => {
         const title = post.title;
+        const flair = post.link_flair_text || "";
 
         const isFree = /free|100%|\$0|0\.00/i.test(title);
         const notJunk = !/trial|beta|demo|weekend|99%|0\.001/i.test(title);
         const isStore = /steam|epic|gog/i.test(title);
         const isService = /[Steam|Epic|GOG]/i.test(title);
-        const notExpired = !/expired|ended|over/i.test(title);
+        const notExpired = !/expired|ended|over/i.test(flair);
 
         return isFree && notJunk && isStore && isService && notExpired;
       })
@@ -129,7 +129,7 @@ export async function handleFreeGames(api) {
   await checkFreeGames(api);
 }
 
-export function startFreeGamesChecker(api) {
+export function freeGamesInterval(api) {
   setInterval(
     () => {
       checkFreeGames(api).catch((err) => console.error("Interval error:", err));

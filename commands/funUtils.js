@@ -1,25 +1,26 @@
 import axios from 'axios';
+import { clients } from '../bot.js';
 
 let pastaCache = [];
+let lastPastaFetch = 0;
 
-console.log("funUtils loaded");
+console.log("funUtils loaded.\nInitializing copypasta fetch...");
 
-async function getCopypasta() {
+async function fetchCopyPasta() {
     try {
-        const response = await axios.get("https://www.reddit.com/r/BrazilianCopypasta/new.json?limit=50", {
+        const response = await axios.get("https://reddit34.p.rapidapi.com/getPostsBySubreddit?subreddit=BrazilianCopypasta&sort=new", {
         headers: {
-            "User-Agent": "web:Fluxer-tool:1.0 (by /u/misha)",
-            "Accept": "application/json",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Connection": "keep-alive"
-        },
-    });
+            "Content-Type": "application/json",
+            "x-rapidapi-host": "reddit34.p.rapidapi.com",
+            "x-rapidapi-key": clients.rapidApiKey,
+            },
+        });
 
-        console.log("Reddit API response status:", response.status);
-        /* console.log("Reddit API response data:", response.data.data.children[0]); */ // Logs the first post to understand the structure
-        /* console.log("Step one - logs the entire API response data to understand its structure and content"); */
+        console.log("Fetched copypasta:", response.data.data.posts);
+        console.log("[1] Fetching new copypasta...");
+        console.log("[1] Reddit API response status:", response.status);
 
-        const result = response.data.data.children
+        const result = response.data.data.posts
         .map((post, index) => ({
             index,
             title: post.data.title,
@@ -27,42 +28,58 @@ async function getCopypasta() {
             url: post.data.url,
         }))
         .filter((postData) => postData.selftext && postData.selftext.length <= 2000);
-            
-        const allIndexes = result.map((post) => post.index);
-        const randomIndex = Math.floor(Math.random() * result.length);
 
-        console.log("All post indexes:", allIndexes);
-        console.log("mapped posts:", result);
-        console.log("Step two - Map posts inside the response array and filters them\n to only include those with selftext and a length of 2000 characters or less, then selects a random post from the filtered list");
-        
-        let fetchedPastaID = result[randomIndex] || "No copypasta found.";
-        pastaCache = fetchedPastaID;
-
-        console.log("Fetched copypasta:", pastaCache);
-        console.log("Step three - Return the randomly fetched copypasta");
+        console.log("Successfully fetched posts!");
+        pastaCache = result;
         return pastaCache;
     } catch (err) {
         console.error("Error fetching copypasta:", err.response?.status);
-        return "Sorry, couldn't fetch a copypasta right now.";
+        return pastaCache;
     }
 }
 
-export async function handleCopyPastaBR(api, data, args, clients) {{ 
+async function getCopyPasta() {
+
+    if (pastaCache.length === 0 || Date.now() - lastPastaFetch > 24 * 60 * 60 * 1000) { // Fetch new copypasta if cache is empty or older than 24 hours
+        await fetchCopyPasta();
+    } 
+
+    const RandomFetchedPasta = Math.floor(Math.random() * pastaCache.length);
+    if (RandomFetchedPasta === lastPastaFetch) {
+        return fetchCopyPasta(); // Fetch another if the same copypasta is selected
+    } else {
+
+    lastPastaFetch = RandomFetchedPasta;
+    return pastaCache[RandomFetchedPasta];
+    }
+}
+
+export async function handleCopyPastaBR(api, data, args, clients) {
+
     try{    
-    const copypasta = await getCopypasta();
-     await api.channels.createMessage(data.channel_id, {
-        embeds: [
-          {
-            title: copypasta.title,
-            description: copypasta.selftext,
-            url: copypasta.url,
-            color: 0xffff00,
-            timestamp: new Date().toISOString(),
-          },
+        const copypasta = await getCopyPasta();
+        await api.channels.createMessage(data.channel_id, {
+            embeds: [
+            {
+                title: copypasta.title,
+                description: copypasta.selftext,
+                url: copypasta.url,
+                timestamp: new Date().toISOString(),
+            },
         ],
       });
     } catch (err) {
     console.error("Error handling copypasta command:", err);
-    await api.channels.createMessage(data.channel_id, "Sorry, couldn't fetch a copypasta right now.");
-  }}
+    await api.channels.createMessage(data.channel_id, {
+        embeds: [{content: "Sorry, something went wrong while fetching the copypasta.",}]
+      });
+    }
+}
+
+export async function postFetchInterval() {
+    if (pastaCache.length === 0) {
+        await fetchCopyPasta();
+    }
+
+    setInterval(fetchCopyPasta, 60000 * 60 * 24); // Fetch every 24 hours
 }
