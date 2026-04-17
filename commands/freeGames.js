@@ -27,12 +27,15 @@ async function getRedditFreeGames() {
   }
 
   try {
-    const res = await axios.get("https://www.reddit.com/r/GameDeals/new.json", {
-      params: { limit: 25 },
+    const res = await axios.get("https://www.reddit.com/r/GameDeals/new.json?limit=25", {
       headers: {
-        "User-Agent": "fluxer-bot/1.0 (by u/misha)",
+        "User-Agent": "web:Fluxer-tool:1.0 (by /u/misha)",
+        "Accept": "application/json",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Connection": "keep-alive"
       },
     })
+    console.log(res.config.headers);
     console.log("Reddit API response status:", res.status);
     
     if (!res.data?.data?.children) {
