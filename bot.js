@@ -22,7 +22,6 @@ if (!token) {
 export const clients = {
   groq: new Groq({ apiKey: process.env.GROQ_API_KEY }),
   pexelsKey: process.env.PEXELS_API_KEY,
-  itadKey: process.env.ITAD_API_KEY,
   youtubeKey: process.env.YOUTUBE_API_KEY,
   botId: "1483928797831864671",
 };

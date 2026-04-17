@@ -8,8 +8,6 @@ let lastFreeGames = [];
 let redditCache = [];
 let lastRedditFetch = 0;
 
-let combinedCache = [];
-
 function normalizeName(name) {
   return name.toLowerCase().replace(/[^a-z0-9]/g, "");
 }
@@ -29,13 +27,14 @@ async function getRedditFreeGames() {
   }
 
   try {
-    const res = await axios.get("https://api.reddit.com/r/GameDeals/new", {
+    const res = await axios.get("https://api.reddit.com/r/GameDeals/best", {
       params: { limit: 25 },
       headers: {
         "User-Agent": "fluxer-bot/1.0 (by u/misha)",
       },
-    });
-
+    })
+    console.log("Reddit API response status:", res.status);
+    
     if (!res.data?.data?.children) {
       console.warn("Reddit blocked or invalid response");
       return redditCache;
@@ -47,10 +46,12 @@ async function getRedditFreeGames() {
         const title = post.title;
 
         const isFree = /free|100%|\$0|0\.00/i.test(title);
-        const notJunk = !/trial|beta|demo|weekend/i.test(title);
+        const notJunk = !/trial|beta|demo|weekend|99%|0\.001/i.test(title);
         const isStore = /steam|epic|gog/i.test(title);
+        const isService = /[Steam|Epic|GOG]/i.test(title);
+        const notExpired = !/expired|ended|over/i.test(title);
 
-        return isFree && notJunk && isStore;
+        return isFree && notJunk && isStore && isService && notExpired;
       })
       .map((post) => ({
         id: "reddit_" + post.id,
@@ -63,6 +64,8 @@ async function getRedditFreeGames() {
     redditCache = result;
     lastRedditFetch = Date.now();
 
+    console.log("Reddit fetched posts:", redditCache);
+
     return result;
   } catch (err) {
     console.error("Reddit error:", err.response?.status);
@@ -70,68 +73,9 @@ async function getRedditFreeGames() {
   }
 }
 
-async function getITADFreeGames() {
-  try {
-    const res = await axios.get("https://api.isthereanydeal.com/deals/v2", {
-      params: {
-        key: clients.itadKey,
-        country: "BR",
-      },
-    });
-
-    const deals = res.data?.list || [];
-
-    console.log("ITAD RAW:", deals.length);
-
-    return deals
-      .filter((deal) => deal.price_new === 0)
-      .map((deal) => ({
-        id: "itad_" + deal.id,
-        name: deal.title,
-        url: deal.deal?.url || null,
-        source: "itad",
-      }))
-      .filter((g) => g.url && g.name);
-  } catch (err) {
-    console.error("ITAD error:", err.response?.status);
-    return [];
-  }
-}
-
-async function getAllFreeGames() {
-  const [itad, reddit] = await Promise.all([
-    safeFetch(getITADFreeGames, "ITAD"),
-    safeFetch(getRedditFreeGames, "Reddit"),
-  ]);
-
-  console.log("Sources:", {
-    itad: itad.length,
-    reddit: reddit.length,
-  });
-
-  const combined = [...itad, ...reddit];
-
-  const unique = Object.values(
-    Object.fromEntries(
-      combined.filter((g) => g?.name).map((g) => [normalizeName(g.name), g]),
-    ),
-  );
-
-  if (unique.length === 0 && combinedCache.length > 0) {
-    console.warn("Using cached results");
-    return combinedCache;
-  }
-
-  if (unique.length > 0) {
-    combinedCache = unique;
-  }
-
-  return unique;
-}
-
 async function checkFreeGames(api) {
   try {
-    const current = await getAllFreeGames();
+    const current = await getRedditFreeGames();
 
     const isFirstRun = lastFreeGames.length === 0;
 
@@ -170,6 +114,7 @@ async function checkFreeGames(api) {
 
     lastFreeGames = current;
 
+    console.log(`Checked for free games. Found ${current.length} total, ${newGames.length} new.`);
     return newGames;
   } catch (err) {
     console.error("checkFreeGames error:", err);
@@ -178,18 +123,7 @@ async function checkFreeGames(api) {
 }
 
 export async function handleFreeGames(api) {
-  const newGames = await checkFreeGames(api);
-
-  await api.channels.createMessage(CHANNEL_ID, {
-    embeds: [
-      {
-        title: "Checked for Promotions",
-        description: `Current: ${lastFreeGames.length} free games\nNew: ${newGames.length} new free games`,
-        color: 0x00ff00,
-        timestamp: new Date().toISOString(),
-      },
-    ],
-  });
+  await checkFreeGames(api);
 }
 
 export function startFreeGamesChecker(api) {
