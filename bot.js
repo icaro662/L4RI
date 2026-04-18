@@ -8,6 +8,7 @@ import { handleImgSearch } from "./commands/imgSearch.js";
 import { freeGamesInterval } from "./commands/freeGames.js";
 import { postFetchInterval } from "./commands/funUtils.js";
 import { handleFreeGames } from "./commands/freeGames.js";
+import { handleTestingApi } from "./commands/freeGames.js";
 import { handleYoutube } from "./commands/youtube.js";
 import { handleCopyPastaBR } from "./commands/funUtils.js";
 import { Groq } from "groq-sdk";
@@ -138,9 +139,11 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
         await handleYoutube(api, data, args, clients);
       } else if (command === "checkfree" || command === "check") {
         await handleFreeGames(api, data, args, clients)
+      } else if (command === "testingfree") {
+        await handleTestingApi(api, data, args, clients)
       } else if (command === "copypasta") {
         await handleCopyPastaBR(api, data, args, clients);
-     } else if (command === "help") {
+      } else if (command === "help") {
         await api.channels.createMessage(data.channel_id, {
           embeds: [
             {

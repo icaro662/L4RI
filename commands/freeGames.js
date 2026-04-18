@@ -27,7 +27,7 @@ async function getRedditFreeGames() {
   }
 
   try {
-    const res = await axios.get("https://reddit34.p.rapidapi.com/getPostsBySubreddit?subreddit=GameDeals&sort=new", {
+    const res = await axios.get("https://reddit34.p.rapidapi.com/getPostsBySubreddit?subreddit=GameDeals&sort=top", {
       headers: {
           "Content-Type": "application/json",
           "x-rapidapi-host": "reddit34.p.rapidapi.com",
@@ -67,12 +67,59 @@ async function getRedditFreeGames() {
     redditCache = result;
     lastRedditFetch = Date.now();
 
-    console.log("Reddit fetched posts:", redditCache);
+    //console.log("Reddit fetched posts:", redditCache);
 
     return result;
   } catch (err) {
     console.error("Reddit error:", err.response?.status);
     return redditCache;
+  }
+}
+
+async function TestingApi() {
+  try {
+    const res = await axios.get("https://reddit34.p.rapidapi.com/getPostsBySubreddit?subreddit=GameDeals&sort=top", {
+      headers: {
+          "Content-Type": "application/json",
+          "x-rapidapi-host": "reddit34.p.rapidapi.com",
+          "x-rapidapi-key": clients.rapidApiKey,
+        },
+    })
+ 
+  const result = res.data.data[0];
+  console.log("Testing API result:", result);
+  return result;
+  } catch (err) {
+    console.error("Testing API error:", err.response?.status);
+    return null;
+  }
+}
+
+export async function handleTestingApi(api) {
+  const result = await TestingApi();
+  if (result) {
+    await api.channels.createMessage(CHANNEL_ID, {
+      embeds: [
+        {
+          title: "Testing API Result",
+          description: `Title: ${result.title}\nURL: ${result.url}`,
+          color: 0x0000ff,
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    });
+  } else {
+    console.log("Testing API result 2:", result);
+    await api.channels.createMessage(CHANNEL_ID, {
+      embeds: [
+        {
+          title: "Testing API Result",
+          description: "No results found.",
+          color: 0xff0000,
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    });
   }
 }
 

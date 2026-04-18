@@ -16,7 +16,7 @@ async function fetchCopyPasta() {
             },
         });
 
-        console.log("Fetched copypasta:", response.data.data.posts);
+        // console.log("Fetched copypasta:", response.data.data.posts);
         console.log("[1] Fetching new copypasta...");
         console.log("[1] Reddit API response status:", response.status);
 
