@@ -4,7 +4,7 @@ import { clients } from '../index.js';
 let pastaCache = [];
 let lastPastaFetch = 0;
 
-console.log("fun loaded.\nInitializing copypasta fetch...");
+console.log("Initializing copypasta fetch...");
 
 async function fetchCopyPasta() {
     try {

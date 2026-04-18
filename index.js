@@ -17,7 +17,7 @@ import "dotenv/config";
 const userConversations = new Map();
 const PREFIX = "!";
 
-const token = process.env["FLUXER_index_TOKEN"];
+const token = process.env["FLUXER_BOT_TOKEN"];
 if (!token) {
   throw new Error("You forgot the token!");
 }
@@ -26,7 +26,7 @@ export const clients = {
   groq: new Groq({ apiKey: process.env.GROQ_API_KEY }),
   pexelsKey: process.env.PEXELS_API_KEY,
   youtubeKey: process.env.YOUTUBE_API_KEY,
-  indexId: "1483928797831864671",
+  botId: "1483928797831864671",
 };
 
 Object.entries(clients).forEach(([name, key]) => {
