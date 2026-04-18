@@ -6,11 +6,11 @@ import { handleGrok } from "./commands/grok.js";
 import { handleGrokAnalyze } from './commands/grok.js';
 import { handleImgSearch } from "./commands/imgSearch.js";
 import { freeGamesInterval } from "./commands/freeGames.js";
-import { postFetchInterval } from "./commands/funUtils.js";
+import { postFetchInterval } from "./commands/fun.js";
 import { handleFreeGames } from "./commands/freeGames.js";
 import { handleTestingApi } from "./commands/freeGames.js";
 import { handleYoutube } from "./commands/youtube.js";
-import { handleCopyPastaBR } from "./commands/funUtils.js";
+import { handleCopyPastaBR } from "./commands/fun.js";
 import { Groq } from "groq-sdk";
 import "dotenv/config";
 
@@ -26,7 +26,6 @@ export const clients = {
   groq: new Groq({ apiKey: process.env.GROQ_API_KEY }),
   pexelsKey: process.env.PEXELS_API_KEY,
   youtubeKey: process.env.YOUTUBE_API_KEY,
-  rapidApiKey: process.env.RAPID_API_KEY,
   botId: "1483928797831864671",
 };
 
@@ -160,7 +159,8 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
           !search [query] - Search the web using DuckDuckGo\n
           !img [query] - Search for images using Pexels\n
           !yt or !youtube [query] - Search for YouTube videos\n
-          !check or !checkfree - Check for new free games (Steam, Epic, GOG, NewEgg)\n
+          !check or !checkfree - Check for new free games (Steam, Epic, GOG)\n
+          !copypasta - Get a random copypasta from r/BrazilianCopypasta\n
 
           Other commands:\n
 

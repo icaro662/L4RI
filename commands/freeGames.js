@@ -1,5 +1,5 @@
 import axios from "axios";
-import { clients } from "../bot.js";
+import { clients } from "../index.js";
 
 const CHANNEL_ID = "1484334210085946326";
 
@@ -27,11 +27,12 @@ async function getRedditFreeGames() {
   }
 
   try {
-    const res = await axios.get("https://reddit34.p.rapidapi.com/getPostsBySubreddit?subreddit=GameDeals&sort=top", {
+    const res = await axios.get("https://www.reddit.com/r/GameDeals/top.json?limit=10", {
       headers: {
-          "Content-Type": "application/json",
-          "x-rapidapi-host": "reddit34.p.rapidapi.com",
-          "x-rapidapi-key": clients.rapidApiKey,
+            "User-Agent": "Web:Fluxer-tool:1.0 (by /u/misha)",
+            "Accept": "application/json",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Connection": "keep-alive"
         },
     })
     console.log(res.config.headers);
@@ -42,7 +43,7 @@ async function getRedditFreeGames() {
       return redditCache;
     }
 
-    const result = res.data.data.posts
+    const result = res.data.data.children
       .map((p) => p.data)
       .filter((post) => {
         const title = post.title;
@@ -67,8 +68,6 @@ async function getRedditFreeGames() {
     redditCache = result;
     lastRedditFetch = Date.now();
 
-    //console.log("Reddit fetched posts:", redditCache);
-
     return result;
   } catch (err) {
     console.error("Reddit error:", err.response?.status);
@@ -78,11 +77,12 @@ async function getRedditFreeGames() {
 
 async function TestingApi() {
   try {
-    const res = await axios.get("https://reddit34.p.rapidapi.com/getPostsBySubreddit?subreddit=GameDeals&sort=top", {
+    const res = await axios.get("https://www.reddit.com/r/GameDeals/top.json?limit=1", {
       headers: {
-          "Content-Type": "application/json",
-          "x-rapidapi-host": "reddit34.p.rapidapi.com",
-          "x-rapidapi-key": clients.rapidApiKey,
+            "User-Agent": "Web:Fluxer-tool:1.0 (by /u/misha)",
+            "Accept": "application/json",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Connection": "keep-alive"
         },
     })
  

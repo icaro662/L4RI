@@ -1,26 +1,31 @@
 import axios from 'axios';
-import { clients } from '../bot.js';
+import { clients } from '../index.js';
 
 let pastaCache = [];
 let lastPastaFetch = 0;
 
-console.log("funUtils loaded.\nInitializing copypasta fetch...");
+console.log("fun loaded.\nInitializing copypasta fetch...");
 
 async function fetchCopyPasta() {
     try {
-        const response = await axios.get("https://reddit34.p.rapidapi.com/getPostsBySubreddit?subreddit=BrazilianCopypasta&sort=new", {
+        if (pastaCache.length > 0 || (Date.now() - lastPastaFetch) < 60000 * 60 * 24) { // 24 hours
+            console.log("[1] Copypasta fetch is already filled. Using cached data.");
+            return pastaCache;
+        }
+
+        const response = await axios.get("https://www.reddit.com/r/BrazilianCopypasta/new.json?limit=25", {
         headers: {
-            "Content-Type": "application/json",
-            "x-rapidapi-host": "reddit34.p.rapidapi.com",
-            "x-rapidapi-key": clients.rapidApiKey,
+            "User-Agent": "Web:Fluxer-tool:1.0 (by /u/misha)",
+            "Accept": "application/json",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Connection": "keep-alive",
             },
         });
 
-        // console.log("Fetched copypasta:", response.data.data.posts);
         console.log("[1] Fetching new copypasta...");
         console.log("[1] Reddit API response status:", response.status);
 
-        const result = response.data.data.posts
+        const result = response.data.data.children
         .map((post, index) => ({
             index,
             title: post.data.title,
@@ -29,7 +34,7 @@ async function fetchCopyPasta() {
         }))
         .filter((postData) => postData.selftext && postData.selftext.length <= 2000);
 
-        console.log("Successfully fetched posts!");
+        console.log("[1] Successfully fetched posts!");
         pastaCache = result;
         return pastaCache;
     } catch (err) {
@@ -38,19 +43,30 @@ async function fetchCopyPasta() {
     }
 }
 
+export async function testRedditPasta() {
+    console.log("Testing fetchCopyPasta...");
+    const result = await fetchCopyPasta();
+    console.log("Testing result:", pastaCache);
+
+    const  response = await getCopyPasta();
+    console.log("Random copypasta:", response);
+    console.log("last fetched:", lastPastaFetch);
+
+    console.log("Testing completed.");
+}
+
 async function getCopyPasta() {
+    fetchCopyPasta(); // Ensure we have the latest copypasta
 
-    if (pastaCache.length === 0 || Date.now() - lastPastaFetch > 24 * 60 * 60 * 1000) { // Fetch new copypasta if cache is empty or older than 24 hours
-        await fetchCopyPasta();
-    } 
+    const Randomizer = Math.floor(Math.random() * pastaCache.length);
+    let fetchedPasta = pastaCache[Randomizer];
 
-    const RandomFetchedPasta = Math.floor(Math.random() * pastaCache.length);
-    if (RandomFetchedPasta === lastPastaFetch) {
+    if (fetchedPasta === lastPastaFetch) {
         return fetchCopyPasta(); // Fetch another if the same copypasta is selected
     } else {
 
-    lastPastaFetch = RandomFetchedPasta;
-    return pastaCache[RandomFetchedPasta];
+    lastPastaFetch = fetchedPasta;
+    return pastaCache[Randomizer];
     }
 }
 
