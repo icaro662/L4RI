@@ -12,7 +12,7 @@ export async function handleGrok(
 
   if (!userText) {
     return api.channels.createMessage(data.channel_id, {
-      content: "Usage: @bot [your question]",
+      content: "Usage: @index [your question]",
       message_reference: { message_id: data.id },
       allowed_mentions: { replied_user: false },
     });
@@ -149,7 +149,7 @@ export async function handleGrokAnalyze(
     !attachment.content_type.startsWith("image/")
   ) {
     return api.channels.createMessage(data.channel_id, {
-      content: "Usage: @bot analyze || @bot analise [image attachment]",
+      content: "Usage: @index analyze || @index analise [image attachment]",
       message_reference: { message_id: data.id },
       allowed_mentions: { replied_user: false },
     });

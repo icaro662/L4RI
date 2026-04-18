@@ -17,7 +17,7 @@ import "dotenv/config";
 const userConversations = new Map();
 const PREFIX = "!";
 
-const token = process.env["FLUXER_BOT_TOKEN"];
+const token = process.env["FLUXER_index_TOKEN"];
 if (!token) {
   throw new Error("You forgot the token!");
 }
@@ -26,7 +26,7 @@ export const clients = {
   groq: new Groq({ apiKey: process.env.GROQ_API_KEY }),
   pexelsKey: process.env.PEXELS_API_KEY,
   youtubeKey: process.env.YOUTUBE_API_KEY,
-  botId: "1483928797831864671",
+  indexId: "1483928797831864671",
 };
 
 Object.entries(clients).forEach(([name, key]) => {
@@ -77,11 +77,11 @@ function getEmbedVariants(url) {
 const client = new Client({ rest, gateway });
 
 client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
-  const botId = clients.botId;
-  const MENTION = data.content.startsWith(`<@${botId}>`)
-    ? `<@${botId}>`
-    : `<@!${botId}>`;
-  if (data.author.bot) {
+  const indexId = clients.indexId;
+  const MENTION = data.content.startsWith(`<@${indexId}>`)
+    ? `<@${indexId}>`
+    : `<@!${indexId}>`;
+  if (data.author.index) {
     return;
   } else if (!data.content.startsWith(PREFIX) && data.content.includes("http")) {
     const urls = extractUrls(data.content);
@@ -151,8 +151,8 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
 
           Generative AI commands:\n
 
-          @bot [attachment] [question] - Analyze an image with Groq\n
-          @bot [question] - Ask Groq a question or have a conversation\n
+          @index [attachment] [question] - Analyze an image with Groq\n
+          @index [question] - Ask Groq a question or have a conversation\n
 
           General search commands:\n
 
