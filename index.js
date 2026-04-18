@@ -1,18 +1,18 @@
 import { Client, GatewayDispatchEvents } from "@discordjs/core";
 import { REST } from "@discordjs/rest";
 import { WebSocketManager } from "@discordjs/ws";
-import { handleSearch } from "./commands/search.js";
-import { handleGrok } from "./commands/grok.js";
-import { handleGrokAnalyze } from './commands/grok.js';
-import { handleImgSearch } from "./commands/imgSearch.js";
-import { freeGamesInterval } from "./commands/freeGames.js";
-import { postFetchInterval } from "./commands/fun.js";
-import { handleFreeGames } from "./commands/freeGames.js";
-import { handleTestingApi } from "./commands/freeGames.js";
-import { handleYoutube } from "./commands/youtube.js";
-import { handleCopyPastaBR } from "./commands/fun.js";
 import { Groq } from "groq-sdk";
 import "dotenv/config";
+import { gamesFetchInterval } from "./commands/freeGames.js";
+import { pastaFetchInterval } from "./commands/fun.js";
+import { urlParser } from "./utils/urlParser.js";
+import { handleGrok } from "./commands/grok.js";
+import { handleGrokAnalyze } from './commands/grok.js';
+import { handleSearch } from "./commands/search.js";
+import { handleImgSearch } from "./commands/imgSearch.js";
+import { handleFreeCheck } from "./commands/freeGames.js";
+import { handleYoutube } from "./commands/youtube.js";
+import { handleCopyPastaBR } from "./commands/fun.js";
 
 const userConversations = new Map();
 const PREFIX = "!";
@@ -46,68 +46,21 @@ const gateway = new WebSocketManager({
   version: "1",
 });
 
-function extractUrls(text) {
-  return text.match(/https?:\/\/\S+/g) || [];
-}
-
-function getEmbedVariants(url) {
-  if (url.includes("instagram.com") || url.includes("instagram/reel")) {
-    return [
-      url.replace("instagram.com", "ddinstagram.com"),
-      url.replace("instagram.com", "ssinstagram.com"),
-      url,
-    ];
-  }
-
-  if (url.includes("twitter.com") || url.includes("x.com")) {
-    return [
-      url.replace(/(twitter|x)\.com/, "fxtwitter.com"),
-      url.replace(/(twitter|x)\.com/, "vxtwitter.com"),
-      url,
-    ];
-  }
-
-  if (url.includes("reddit.com")) {
-    return [url.replace("reddit.com", "rxddit.com"), url];
-  }
-
-  return [url];
-}
-
 const client = new Client({ rest, gateway });
 
 client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
+  if (data.author.index) {
+    return;
+  }
+
   const indexId = clients.indexId;
   const MENTION = data.content.startsWith(`<@${indexId}>`)
     ? `<@${indexId}>`
     : `<@!${indexId}>`;
-  if (data.author.index) {
-    return;
-  } else if (!data.content.startsWith(PREFIX) && data.content.includes("http")) {
-    const urls = extractUrls(data.content);
 
-    if (urls.length > 0) {
-      for (let url of urls) {
-        if (
-          url.includes("instagram.com") ||
-          url.includes("instagram/reel") ||
-          url.includes("twitter.com") ||
-          url.includes("x.com") ||
-          url.includes("reddit.com")
-        ) {
-          const variants = getEmbedVariants(url);
-
-          await api.channels.deleteMessage(data.channel_id, data.id);
-
-          await api.channels.createMessage(data.channel_id, {
-            content:
-              "Message sent by " + data.author.username + "\n" + variants[0],
-          });
-        }
-      }
-      return;
+    if (data.content.includes("http://") || data.content.includes("https://")) {
+      await urlParser(data);
     }
-  }
 
   if (data.content.startsWith(MENTION)) {
 
@@ -137,9 +90,7 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
       } else if (command === "yt" || command === "youtube") {
         await handleYoutube(api, data, args, clients);
       } else if (command === "checkfree" || command === "check") {
-        await handleFreeGames(api, data, args, clients)
-      } else if (command === "testingfree") {
-        await handleTestingApi(api, data, args, clients)
+        await handleFreeCheck (api, data, args, clients)
       } else if (command === "copypasta") {
         await handleCopyPastaBR(api, data, args, clients);
       } else if (command === "help") {
@@ -189,8 +140,8 @@ client.on(GatewayDispatchEvents.Ready, async ({ api, data }) => {
   const { username, discriminator } = data.user;
   console.log(`Logged in as @${username}#${discriminator}`);
 
-  postFetchInterval();
-  freeGamesInterval(api);
+  pastaFetchInterval();
+  gamesFetchInterval(api);
 });
 
 gateway.connect();

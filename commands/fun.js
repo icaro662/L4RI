@@ -6,14 +6,14 @@ let lastPastaFetch = 0;
 
 console.log("Initializing copypasta fetch...");
 
-async function fetchCopyPasta() {
+export async function fetchCopyPasta() {
     try {
         if (pastaCache.length > 0 || (Date.now() - lastPastaFetch) < 60000 * 60 * 24) { // 24 hours
             console.log("[1] Copypasta fetch is already filled. Using cached data.");
             return pastaCache;
         }
 
-        const response = await axios.get("https://www.reddit.com/r/BrazilianCopypasta/new.json?limit=25", {
+        const response = await axios.get("https://www.reddit.com/r/BrazilianCopypasta/new.json?limit=50", {
         headers: {
             "User-Agent": "Web:Fluxer-tool:1.0 (by /u/misha)",
             "Accept": "application/json",
@@ -23,7 +23,7 @@ async function fetchCopyPasta() {
         });
 
         console.log("[1] Fetching new copypasta...");
-        console.log("[1] Reddit API response status:", response.status);
+        console.log("[1] Fetching copypasta response status:", response.status);
 
         const result = response.data.data.children
         .map((post, index) => ({
@@ -43,20 +43,8 @@ async function fetchCopyPasta() {
     }
 }
 
-export async function testRedditPasta() {
-    console.log("Testing fetchCopyPasta...");
-    const result = await fetchCopyPasta();
-    console.log("Testing result:", pastaCache);
-
-    const  response = await getCopyPasta();
-    console.log("Random copypasta:", response);
-    console.log("last fetched:", lastPastaFetch);
-
-    console.log("Testing completed.");
-}
-
-async function getCopyPasta() {
-    fetchCopyPasta(); // Ensure we have the latest copypasta
+export async function getCopyPasta() {
+    await fetchCopyPasta(); // Ensure we have the latest copypasta
 
     const Randomizer = Math.floor(Math.random() * pastaCache.length);
     let fetchedPasta = pastaCache[Randomizer];
@@ -92,7 +80,7 @@ export async function handleCopyPastaBR(api, data, args, clients) {
     }
 }
 
-export async function postFetchInterval() {
+export async function pastaFetchInterval() {
     if (pastaCache.length === 0) {
         await fetchCopyPasta();
     }

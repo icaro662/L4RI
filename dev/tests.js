@@ -1,3 +1,2 @@
-import {testRedditPasta} from "./commands/fun.js";
-
-await testRedditPasta();
+import { handleCopyPastaBR, fetchCopyPasta, getCopyPasta  } from "../commands/fun";
+import { handleFreeCheck, fetchRedditGames, get } from "../commands/freeGames";
