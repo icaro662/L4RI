@@ -114,6 +114,8 @@ export async function compareCache(api) {
   const redditGames = await fetchRedditGames();
   const freeGames = getFreeGames(redditGames);
 
+  console.log("[2] Filtered free games count:", freeGames.length);
+
   const isFirstRun = lastFreeGames.length === 0;
 
   const newGames = isFirstRun
@@ -155,7 +157,7 @@ export async function compareCache(api) {
 }
 
 export async function handleFreeCheck(api) {
-  await compareCache(await fetchRedditGames());
+  await compareCache(api);
 }
 
 export function gamesFetchInterval(api) {

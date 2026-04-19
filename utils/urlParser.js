@@ -20,8 +20,8 @@ function getEmbedVariants(url) {
   }
 }
 
-export async function urlParser(data) {
-    const urls = extractUrls(data.content);
+export async function urlParser(content) {
+    const urls = extractUrls(content);
 
     if (urls.length > 0) {
       for (let url of urls) {

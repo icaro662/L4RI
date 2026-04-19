@@ -16,6 +16,7 @@ import { handleCopyPastaBR } from "./commands/fun.js";
 
 const userConversations = new Map();
 const PREFIX = "!";
+const MENTION = "<@1483928797831864671>";
 
 const token = process.env["FLUXER_BOT_TOKEN"];
 if (!token) {
@@ -26,7 +27,6 @@ export const clients = {
   groq: new Groq({ apiKey: process.env.GROQ_API_KEY }),
   pexelsKey: process.env.PEXELS_API_KEY,
   youtubeKey: process.env.YOUTUBE_API_KEY,
-  botId: "1483928797831864671",
 };
 
 Object.entries(clients).forEach(([name, key]) => {
@@ -49,21 +49,10 @@ const gateway = new WebSocketManager({
 const client = new Client({ rest, gateway });
 
 client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
-  if (data.author.index) {
-    return;
-  }
-
-  const indexId = clients.indexId;
-  const MENTION = data.content.startsWith(`<@${indexId}>`)
-    ? `<@${indexId}>`
-    : `<@!${indexId}>`;
-
-    if (data.content.includes("http://") || data.content.includes("https://")) {
-      await urlParser(data);
-    }
-
-  if (data.content.startsWith(MENTION)) {
-
+  if (data.content.includes("http://") || data.content.includes("https://")) {
+    await urlParser(data.content);
+  } 
+  else if (data.content.startsWith(MENTION)) {
     try {
       if (data.attachments && data.attachments.length > 0) {
         const question = data.content.replace(MENTION, "").trim();
@@ -72,13 +61,11 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
         const question = data.content.replace(MENTION, "").trim();
         await handleGrok(api, data, [question], userConversations, clients);
       }
-
     } catch (error) {
-      console.error("Unexpected error:", error);
-    }
+        console.error("Unexpected error:", error);
+      }
   } 
-
-  if (data.content.startsWith(PREFIX)) {
+  else if (data.content.startsWith(PREFIX)) {
     const args = data.content.slice(PREFIX.length).trim().split(" ");
     const command = args.shift().toLowerCase();
 
@@ -87,7 +74,11 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
         await handleSearch(api, data, args);
       } else if (command === "img") {
         await handleImgSearch(api, data, args, clients);
-      } else if (command === "yt" || command === "youtube") {
+      } else if (command === "grok") {
+        await handleGrok(api, data, args, userConversations, clients);
+      } else if (command === "analyze") {
+        await handleGrokAnalyze(api, data, args, userConversations, clients); 
+      }else if (command === "yt" || command === "youtube") {
         await handleYoutube(api, data, args, clients);
       } else if (command === "checkfree" || command === "check") {
         await handleFreeCheck (api, data, args, clients)
@@ -125,9 +116,8 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
     } catch (error) {
       console.error("Command error:", error);
     }
-  }
-
-  if (data.content === "casa cmg?") {
+  } 
+  else if (data.content === "casa cmg?") {
     await api.channels.createMessage(data.channel_id, {
       content: "SIM CASO COM VC",
       message_reference: { message_id: data.id },

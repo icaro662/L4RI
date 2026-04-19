@@ -34,7 +34,7 @@ export async function fetchCopyPasta() {
         }))
         .filter((postData) => postData.selftext && postData.selftext.length <= 2000);
 
-        console.log("[1] Successfully fetched posts!");
+        console.log("[1] Successfully fetched copypasta!");
         pastaCache = result;
         return pastaCache;
     } catch (err) {
