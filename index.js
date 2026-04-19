@@ -50,7 +50,7 @@ const client = new Client({ rest, gateway });
 
 client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
   if (data.content.includes("http://") || data.content.includes("https://")) {
-    await urlParser(data.content);
+    await urlParser(data, api);
   } 
   else if (data.content.startsWith(MENTION)) {
     try {

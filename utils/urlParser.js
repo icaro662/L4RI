@@ -1,3 +1,5 @@
+import { DefaultWebSocketManagerOptions } from "discord.js";
+
 function extractUrls(text) {
   return text.match(/https?:\/\/\S+/g) || [];
 }
@@ -18,29 +20,33 @@ function getEmbedVariants(url) {
       url,
     ];
   }
+
+  return [url];
 }
 
-export async function urlParser(content) {
-    const urls = extractUrls(content);
+export async function urlParser(data, api) {
+  if (!data?.content) return;
 
-    if (urls.length > 0) {
-      for (let url of urls) {
-        if (
-          url.includes("instagram.com") ||
-          url.includes("instagram/reel") ||
-          url.includes("twitter.com") ||
-          url.includes("x.com")
-        ) {
-          const variants = getEmbedVariants(url);
+  else if (data.author?.bot) return;
 
-          await api.channels.deleteMessage(data.channel_id, data.id);
+  const urls = extractUrls(data.content);
 
-          await api.channels.createMessage(data.channel_id, {
-            content:
-              variants[0] + "By " + data.author.username,
-          });
-        }
-      }
-      return;
-    }
+  const supported = urls.filter(
+    (url) =>
+      url.includes("instagram.com") ||
+      url.includes("twitter.com") ||
+      url.includes("x.com")
+  );
+
+  if (supported.length === 0) return;
+
+  await api.channels.deleteMessage(data.channel_id, data.id);
+
+  for (let url of supported) {
+    const variants = getEmbedVariants(url);
+
+    await api.channels.createMessage(data.channel_id, {
+      content: `${variants[0]}` + "\n" + `By ${data.author.username}`,
+    });
   }
+}
