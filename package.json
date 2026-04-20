@@ -2,10 +2,11 @@
   "name": "l4ri",
   "version": "1.0.0",
   "description": "",
-  "main": "bot.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node bot.js"
+    "start": "node index.js",
+    "dev": "node --watch index.js"
   },
   "keywords": [],
   "author": "",
@@ -13,7 +14,7 @@
   "type": "module",
   "dependencies": {
     "@discordjs/core": "2.4.0",
-    "@discordjs/rest": "2.6.0",
+    "@discordjs/rest": "^2.6.1",
     "@discordjs/ws": "2.0.4",
     "axios": "^1.13.6",
     "discord.js": "^14.25.1",
