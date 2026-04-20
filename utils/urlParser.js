@@ -1,5 +1,3 @@
-import { DefaultWebSocketManagerOptions } from "discord.js";
-
 function extractUrls(text) {
   return text.match(/https?:\/\/\S+/g) || [];
 }
