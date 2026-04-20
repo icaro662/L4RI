@@ -3,10 +3,9 @@ import { clients } from "../index.js";
 
 const CHANNEL_ID = "1484334210085946326";
 
-let lastFreeGames = [];
-
-let redditCache = [];
-let lastRedditFetch = 0;
+let lastFreeGames = []; // cache of last known free games to detect changes
+let redditCache = []; // actual cached posts
+let lastRedditFetch = 0; // timestamp of last fetch to manage caching
 
 export async function fetchRedditGames() {
   if (Date.now() - lastRedditFetch < 12 * 60 * 60 * 1000) {
