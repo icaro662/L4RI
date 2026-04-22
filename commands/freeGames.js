@@ -162,7 +162,7 @@ export async function handleFreeCheck(api) {
 export function gamesFetchInterval(api) {
   setInterval(
     () => {
-      getFreeGames(api).catch((err) => console.error("Interval error:", err));
+      compareCache(api).catch((err) => console.error("Interval error:", err));
     },
     1000 * 60 * 60 * 12,
   ); // every 12 hours
