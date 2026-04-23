@@ -9,7 +9,7 @@ console.log("[L4RI] Initializing copypasta fetch...");
 export async function fetchCopyPasta() {
     try {
         if (pastaCache.length > 0 || (Date.now() - lastPastaFetch) < 60000 * 60 * 24) { // 24 hours
-            console.log("[1] Copypasta fetch is already filled. Using cached data.");
+            console.log("[L4RI] Copypasta fetch is already filled. Using cached data.");
             return pastaCache;
         }
 
