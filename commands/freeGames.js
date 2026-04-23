@@ -60,7 +60,7 @@ export async function fetchRedditGames() {
 
     redditCache = result;
     lastRedditFetch = Date.now();
-    
+
     console.log("[L4RI] Successfully fetched games! Count:", redditCache.length);
 
     return redditCache;
@@ -184,7 +184,7 @@ export async function compareCache(api) {
   return true;
   });
 
-  console.log("[2] Filtered free games count:", unique.length);
+  console.log("[L4RI] Filtered free games count:", unique.length);
 
   if (unique) {
     const description = unique
