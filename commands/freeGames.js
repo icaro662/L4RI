@@ -215,9 +215,9 @@ export async function compareCache(api) {
     });
   }
 
-  lastFreeGames = freeGames;
+  lastFreeGames = unique;
 
-  return freeGames;
+  return unique;
 }
 
 export async function handleFreeCheck(api) {
