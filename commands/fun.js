@@ -4,7 +4,7 @@ import { clients } from '../index.js';
 let pastaCache = [];
 let lastPastaFetch = 0;
 
-console.log("Initializing copypasta fetch...");
+console.log("[L4RI] Initializing copypasta fetch...");
 
 export async function fetchCopyPasta() {
     try {
@@ -22,8 +22,8 @@ export async function fetchCopyPasta() {
             },
         });
 
-        console.log("[1] Fetching new copypasta...");
-        console.log("[1] Fetching copypasta response status:", response.status);
+        console.log("[L4RI] Fetching new copypasta...");
+        console.log("[L4RI] Fetching copypasta response status:", response.status);
 
         const result = response.data.data.children
         .map((post, index) => ({
@@ -34,7 +34,7 @@ export async function fetchCopyPasta() {
         }))
         .filter((postData) => postData.selftext && postData.selftext.length <= 2000);
 
-        console.log("[1] Successfully fetched copypasta!");
+        console.log("[L4RI] Successfully fetched copypasta!");
         pastaCache = result;
         return pastaCache;
     } catch (err) {

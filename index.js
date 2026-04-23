@@ -15,6 +15,7 @@ import { handleYoutube } from "./commands/youtube.js";
 import { handleCopyPastaBR } from "./commands/fun.js";
 
 const userConversations = new Map();
+
 const PREFIX = "!";
 const MENTION = "<@1483928797831864671>";
 

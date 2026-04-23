@@ -7,35 +7,61 @@ let lastFreeGames = []; // cache of last known free games to detect changes
 let redditCache = []; // actual cached posts
 let lastRedditFetch = 0; // timestamp of last fetch to manage caching
 
+console.log("[L4RI] Initializing game deals fetch...")
+
 export async function fetchRedditGames() {
   if (Date.now() - lastRedditFetch < 12 * 60 * 60 * 1000) {
     return redditCache;
   }
 
   try {
-    const res = await axios.get("https://www.reddit.com/r/GameDeals/top.json?limit=25", {
+    const [res0, res1, res2] = await Promise.all ([
+    axios.get("https://www.reddit.com/r/GameDeals/top.json?limit=10", {
       headers: {
             "User-Agent": "Web:Fluxer-tool:1.0 (by /u/misha)",
             "Accept": "application/json",
             "Accept-Language": "en-US,en;q=0.9",
             "Connection": "keep-alive"
         },
-    })
-  
-    console.log("[2] Fetching games...");
-    console.log("[2] Fetching games response status:", res.status);
+        }),
+    axios.get("https://www.reddit.com/r/GameDeals/new.json?limit=10", {
+      headers: {
+            "User-Agent": "Web:Fluxer-tool:1.0 (by /u/misha)",
+            "Accept": "application/json",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Connection": "keep-alive"
+        },
+        }),
+    axios.get("https://www.reddit.com/r/GameDeals/best.json?limit=10", {
+      headers: {
+            "User-Agent": "Web:Fluxer-tool:1.0 (by /u/misha)",
+            "Accept": "application/json",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Connection": "keep-alive"
+        },
+        })
+      ])
+   
+    console.log("[L4RI] Fetching games...");
+    //console.log("[2] Fetching games response 0:", res0.data.data.children);
+    //console.log("[2] Fetching games response 1:", res1.data.data.children);
+    //console.log("[2] Fetching games response 2:", res2.data.data.children);
     
-    if (!res.data?.data?.children) {
+    if (!res0.data?.data?.children || !res1.data?.data?.children || !res2.data?.data?.children) {
       console.warn("Reddit blocked or invalid response");
       return redditCache;
     }
 
-    const result = res.data.data.children
+    const result = [
+      ...res0.data.data.children, 
+      ...res1.data.data.children, 
+      ...res2.data.data.children
+    ]
 
     redditCache = result;
     lastRedditFetch = Date.now();
-
-    console.log("[2] Successfully fetched games! Count:", redditCache.length);
+    
+    console.log("[L4RI] Successfully fetched games! Count:", redditCache.length);
 
     return redditCache;
   } catch (err) {
@@ -75,37 +101,67 @@ export function normalizeUrl(rawUrl) {
     // normalize hostname
     let hostname = url.hostname.toLowerCase().replace(/^www\./, "");
 
-    // remove hash
+    // remove hash & query completely
     url.hash = "";
-
-    // strip ALL query params (simplest + most reliable)
     url.search = "";
 
-    // clean trailing slash
     let pathname = url.pathname.replace(/\/+$/, "");
 
-    // optional: special handling for known stores
-
-    // Steam: keep only /app/{id}
-    if (hostname.includes("steampowered.com")) {
-      const match = pathname.match(/^\/app\/\d+/);
-      if (match) pathname = match[0];
+    // -------------------------
+    // 🔴 STEAM (best reliability: app ID)
+    // -------------------------
+    if (hostname.includes("steampowered.com") || hostname === "store.steampowered.com") {
+      const match = pathname.match(/\/app\/(\d+)/);
+      if (match) return `steam:${match[1]}`;
     }
 
-    // Epic: remove extra slug noise
+    // -------------------------
+    // 🟣 EPIC GAMES (slug cleanup)
+    // -------------------------
     if (hostname.includes("epicgames.com")) {
-      pathname = pathname.split("/").slice(0, 3).join("/");
+      const parts = pathname.split("/").filter(Boolean);
+
+      // usually: /store/en-US/p/game-name
+      const slug = parts[parts.length - 1];
+      if (slug) return `epic:${slug.toLowerCase()}`;
     }
 
-    // GOG: keep first meaningful path
+    // -------------------------
+    // 🟡 GOG (slug)
+    // -------------------------
     if (hostname.includes("gog.com")) {
-      pathname = pathname.split("/").slice(0, 3).join("/");
+      const parts = pathname.split("/").filter(Boolean);
+      const slug = parts[parts.length - 1];
+      if (slug) return `gog:${slug.toLowerCase()}`;
     }
 
-    return `${hostname}${pathname}`;
+    // -------------------------
+    // 🔵 HUMBLE / OTHER STORES (basic slug fallback)
+    // -------------------------
+    if (hostname.includes("humblebundle.com")) {
+      const parts = pathname.split("/").filter(Boolean);
+      const slug = parts[parts.length - 1];
+      if (slug) return `humble:${slug.toLowerCase()}`;
+    }
+
+    // -------------------------
+    // 🌍 GENERIC FALLBACK
+    // -------------------------
+    // remove trailing slash, lowercase everything
+    return `${hostname}${pathname}`.toLowerCase();
+
   } catch {
-    return null; // invalid URL
+    return null;
   }
+}
+
+function normalizeTitle(title) {
+  return title
+    .toLowerCase()
+    .replace(/free|100%|\$0|0\.00|limited time/gi, "")
+    .replace(/[^a-z0-9 ]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export async function compareCache(api) {
@@ -113,16 +169,25 @@ export async function compareCache(api) {
   const redditGames = await fetchRedditGames();
   const freeGames = getFreeGames(redditGames);
 
-  console.log("[2] Filtered free games count:", freeGames.length);
-
   const isFirstRun = lastFreeGames.length === 0;
 
-  const newGames = isFirstRun
-    ? freeGames
-    : freeGames.filter((g) => !lastFreeGames.some((p) => p.id === g.id));
+  const seen = new Set();
 
-  if (newGames.length > 0) {
-    const description = newGames
+  const unique = freeGames.filter((g) => {
+    const urlKey = g.id;
+    const titleKey = normalizeTitle(g.name);
+
+    if (seen.has(urlKey) || seen.has(titleKey)) return false;
+
+    seen.add(urlKey);
+    seen.add(titleKey);
+  return true;
+  });
+
+  console.log("[2] Filtered free games count:", unique.length);
+
+  if (unique) {
+    const description = unique
       .slice(0, 5)
       .map((g) => `[${g.name}](${g.url})`)
       .join("\n\n");
@@ -152,7 +217,7 @@ export async function compareCache(api) {
 
   lastFreeGames = freeGames;
 
-  return newGames;
+  return freeGames;
 }
 
 export async function handleFreeCheck(api) {
@@ -160,6 +225,11 @@ export async function handleFreeCheck(api) {
 }
 
 export function gamesFetchInterval(api) {
+
+  if (redditCache.length === 0) {
+    fetchRedditGames()
+  }
+
   setInterval(
     () => {
       compareCache(api).catch((err) => console.error("Interval error:", err));
