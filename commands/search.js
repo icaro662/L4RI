@@ -1,14 +1,22 @@
-export async function handleSearch(api, data, args) {
-    const query = args.join(" ");
-  
-    if (!query) {
-    return api.channels.createMessage(data.channel_id, {
-      content: "Usage: !search [your query]",
-      message_reference: { message_id: data.id },
-      allowed_mentions: { replied_user: false}
-    });
-  }
-  
+export const definition = {
+  name: 'search',
+  description: 'Search through DuckDuckGo',
+  options: [
+    {
+      name: 'query',
+      description: 'What to search for',
+      type: 3,
+      required: true
+    }
+  ]
+};
+
+export async function execute(api, data) {
+  const query = data.data.options.find(o => o.name === 'query')?.value;
+  await handleSearch(api, data, query)
+}
+
+async function handleSearch(api, data, query) {
   try {
     const axios = await import('axios');
     
@@ -19,9 +27,9 @@ export async function handleSearch(api, data, args) {
         no_html: 1
       }
     });
-
+    
     const data_response = response.data;
-
+    
     if (data_response.AbstractText && data_response.AbstractText.trim()) {
       const message = `**Answer for: "${query}"**\n\n${data_response.AbstractText}`;
       
@@ -31,11 +39,11 @@ export async function handleSearch(api, data, args) {
         allowed_mentions: { replied_user: false }
       });
     }
-
+    
     let results = data_response.Results && data_response.Results.length > 0 
-      ? data_response.Results 
-      : [];
-
+    ? data_response.Results 
+    : [];
+    
     if (results.length === 0 && data_response.RelatedTopics) {
       for (const topic of data_response.RelatedTopics) {
         if (topic.Topics) {
@@ -46,21 +54,21 @@ export async function handleSearch(api, data, args) {
         if (results.length >= 5) break;
       }
     }
-
+    
     if (results.length === 0) {
       return api.channels.createMessage(data.channel_id, {
         content: `No results found for: **${query}**`,
         message_reference: { message_id: data.id },
       });
     }
-
+    
     let resultMessage = `**Search Results for: "${query}"**\n\n`;
     
     results.slice(0, 5).forEach((result, index) => {
       resultMessage += `**${index + 1}. ${result.Text || result.Title || 'Result'}**\n`;
       resultMessage += `${result.FirstURL}\n\n`;
     });
-
+    
     if (resultMessage.length > 2000) {
       const chunks = [];
       for (let i = 0; i < resultMessage.length; i += 2000) {
@@ -80,7 +88,7 @@ export async function handleSearch(api, data, args) {
         allowed_mentions: { replied_user: false }
       });
     }
-
+    
   } catch (error) {
     console.error(error);
     await api.channels.createMessage(data.channel_id, {

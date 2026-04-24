@@ -3,21 +3,19 @@ import { REST } from "@discordjs/rest";
 import { WebSocketManager } from "@discordjs/ws";
 import { Groq } from "groq-sdk";
 import "dotenv/config";
+import { commandRegister } from "./utils/register.js";
 import { gamesFetchInterval } from "./commands/freeGames.js";
-import { pastaFetchInterval } from "./commands/fun.js";
+import { pastaFetchInterval } from "./commands/pasta.js";
 import { urlParser } from "./utils/urlParser.js";
-import { handleGrok } from "./commands/grok.js";
+/* import { handleGrok } from "./commands/grok.js";
 import { handleGrokAnalyze } from './commands/grok.js';
 import { handleSearch } from "./commands/search.js";
 import { handleImgSearch } from "./commands/imgSearch.js";
 import { handleFreeCheck } from "./commands/freeGames.js";
 import { handleYoutube } from "./commands/youtube.js";
-import { handleCopyPastaBR } from "./commands/fun.js";
+import { handleCopyPastaBR } from "./commands/pasta.js"; */
 
 const userConversations = new Map();
-
-const PREFIX = "!";
-const MENTION = "<@1483928797831864671>";
 
 const token = process.env["FLUXER_BOT_TOKEN"];
 if (!token) {
@@ -52,77 +50,23 @@ const client = new Client({ rest, gateway });
 client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
   if (data.content.includes("http://") || data.content.includes("https://")) {
     await urlParser(data, api);
-  } 
-  else if (data.content.startsWith(MENTION)) {
-    try {
-      if (data.attachments && data.attachments.length > 0) {
-        const question = data.content.replace(MENTION, "").trim();
-        await handleGrokAnalyze(api, data, [question], userConversations, clients);
-      } else {
-        const question = data.content.replace(MENTION, "").trim();
-        await handleGrok(api, data, [question], userConversations, clients);
-      }
-    } catch (error) {
-        console.error("Unexpected error:", error);
-      }
-  } 
-  else if (data.content.startsWith(PREFIX)) {
-    const args = data.content.slice(PREFIX.length).trim().split(" ");
-    const command = args.shift().toLowerCase();
+  }
+})
 
-    try {
-      if (command === "search") {
-        await handleSearch(api, data, args);
-      } else if (command === "img") {
-        await handleImgSearch(api, data, args, clients);
-      } else if (command === "grok") {
-        await handleGrok(api, data, args, userConversations, clients);
-      } else if (command === "analyze") {
-        await handleGrokAnalyze(api, data, args, userConversations, clients); 
-      }else if (command === "yt" || command === "youtube") {
-        await handleYoutube(api, data, args, clients);
-      } else if (command === "checkfree" || command === "check") {
-        await handleFreeCheck (api, data, args, clients)
-      } else if (command === "copypasta") {
-        await handleCopyPastaBR(api, data, args, clients);
-      } else if (command === "help") {
-        await api.channels.createMessage(data.channel_id, {
-          embeds: [
-            {
-              title: "Available commands",
-              description: `
+client.on(GatewayDispatchEvents.InteractionCreate, async ({ api, data }) => {
+  if (data.type !== 2) return;
 
-          Generative AI commands:\n
+  const command = commands.get(data.data.name);
+  if (!command) return;
 
-          @index [attachment] [question] - Analyze an image with Groq\n
-          @index [question] - Ask Groq a question or have a conversation\n
+  await api.interactions.defer(data.id, data.token);
 
-          General search commands:\n
-
-          !search [query] - Search the web using DuckDuckGo\n
-          !img [query] - Search for images using Pexels\n
-          !yt or !youtube [query] - Search for YouTube videos\n
-          !check or !checkfree - Check for new free games (Steam, Epic, GOG)\n
-          !copypasta - Get a random copypasta from r/BrazilianCopypasta\n
-
-          Other commands:\n
-
-          !help - Show this help message`,
-          message_reference: { message_id: data.id },
-          allowed_mentions: { replied_user: false },
-            },
-          ],
-        });
-      }
-    } catch (error) {
-      console.error("Command error:", error);
-    }
-  } 
-  else if (data.content === "casa cmg?") {
-    await api.channels.createMessage(data.channel_id, {
-      content: "SIM CASO COM VC",
-      message_reference: { message_id: data.id },
-      allowed_mentions: { replied_user: false },
+  try {
+    await command.execute(api, data, clients);
+  } catch (err) {
+    console.error(err);
+    await api.interactions.followUp(data.application_id, data.token, {
+      content: 'Something went wrong.'
     });
   }
 });
@@ -131,8 +75,9 @@ client.on(GatewayDispatchEvents.Ready, async ({ api, data }) => {
   const { username, discriminator } = data.user;
   console.log(`Logged in as @${username}#${discriminator}`);
 
-  pastaFetchInterval();
-  gamesFetchInterval(api);
+  await pastaFetchInterval();
+  await gamesFetchInterval(api);
+  await commandRegister();
 });
 
 gateway.connect();

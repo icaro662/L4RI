@@ -1,6 +1,11 @@
 import axios from 'axios';
 import { clients } from '../index.js';
 
+export const definition = {
+    name: 'copypasta',
+    description: 'Search a random copypasta from r/BrazilianCopypasta',
+};
+
 let pastaCache = [];
 let lastPastaFetch = 0;
 
@@ -12,19 +17,19 @@ export async function fetchCopyPasta() {
             console.log("[L4RI] Copypasta fetch is already filled. Using cached data.");
             return pastaCache;
         }
-
+        
         const response = await axios.get("https://www.reddit.com/r/BrazilianCopypasta/new.json?limit=50", {
-        headers: {
-            "User-Agent": "Web:Fluxer-tool:1.0 (by /u/misha)",
-            "Accept": "application/json",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Connection": "keep-alive",
+            headers: {
+                "User-Agent": "Web:Fluxer-tool:1.0 (by /u/misha)",
+                "Accept": "application/json",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Connection": "keep-alive",
             },
         });
-
+        
         console.log("[L4RI] Fetching new copypasta...");
         console.log("[L4RI] Fetching copypasta response status:", response.status);
-
+        
         const result = response.data.data.children
         .map((post, index) => ({
             index,
@@ -33,7 +38,7 @@ export async function fetchCopyPasta() {
             url: post.data.url,
         }))
         .filter((postData) => postData.selftext && postData.selftext.length <= 2000);
-
+        
         console.log("[L4RI] Successfully fetched copypasta!");
         pastaCache = result;
         return pastaCache;
@@ -45,38 +50,37 @@ export async function fetchCopyPasta() {
 
 export async function getCopyPasta() {
     await fetchCopyPasta(); // Ensure we have the latest copypasta
-
+    
     const Randomizer = Math.floor(Math.random() * pastaCache.length);
     let fetchedPasta = pastaCache[Randomizer];
-
+    
     if (fetchedPasta === lastPastaFetch) {
         return fetchCopyPasta(); // Fetch another if the same copypasta is selected
     } else {
-
-    lastPastaFetch = fetchedPasta;
-    return pastaCache[Randomizer];
+        
+        lastPastaFetch = fetchedPasta;
+        return pastaCache[Randomizer];
     }
 }
 
-export async function handleCopyPastaBR(api, data, args, clients) {
-
+export async function handleCopyPastaBR(api, data, query, clients) {
     try{    
         const copypasta = await getCopyPasta();
         await api.channels.createMessage(data.channel_id, {
             embeds: [
-            {
-                title: copypasta.title,
-                description: copypasta.selftext,
-                url: copypasta.url,
-                timestamp: new Date().toISOString(),
-            },
-        ],
-      });
+                {
+                    title: copypasta.title,
+                    description: copypasta.selftext,
+                    url: copypasta.url,
+                    timestamp: new Date().toISOString(),
+                },
+            ],
+        });
     } catch (err) {
-    console.error("Error handling copypasta command:", err);
-    await api.channels.createMessage(data.channel_id, {
-        embeds: [{content: "Sorry, something went wrong while fetching the copypasta.",}]
-      });
+        console.error("Error handling copypasta command:", err);
+        await api.channels.createMessage(data.channel_id, {
+            embeds: [{content: "Sorry, something went wrong while fetching the copypasta.",}]
+        });
     }
 }
 
@@ -84,6 +88,12 @@ export async function pastaFetchInterval() {
     if (pastaCache.length === 0) {
         await fetchCopyPasta();
     }
-
+    
     setInterval(fetchCopyPasta, 60000 * 60 * 24); // Fetch every 24 hours
+}
+
+
+export async function execute(api, data, clients) {
+    const query = data.data.options.find(o => o.name === 'query')?.value;
+    await handleCopyPastaBR(api, data, query, clients)
 }

@@ -1,15 +1,20 @@
 import 'dotenv/config';
 
-export async function handleImgSearch(api, data, args, clients) {
-  const query = args.join(" ");
-  
-  if (!query) {
-    return api.channels.createMessage(data.channel_id, {
-      content: "Usage: !imgsearch [search term]",
-      message_reference: { message_id: data.id },
-        allowed_mentions: { replied_user: false }
-    });
-  }
+export const definition = {
+  name: 'img',
+  description: 'Search for a image on Pexels',
+  options: [
+    {
+      name: 'query',
+      description: 'What to search for',
+      type: 3,
+      required: true
+    }
+  ]
+};
+
+export async function execute(api, data) {
+  const query = data.data.options.find(o => o.name === 'query')?.value;
   
   try {
     const axios = await import('axios');
