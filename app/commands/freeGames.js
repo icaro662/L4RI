@@ -186,7 +186,7 @@ export async function compareCache(api) {
 
   console.log("[L4RI] Filtered free games count:", unique.length);
 
-  if (unique) {
+  if (unique.length > 0) {
     const description = unique
       .slice(0, 5)
       .map((g) => `[${g.name}](${g.url})`)
