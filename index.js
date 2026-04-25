@@ -129,7 +129,7 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
 
 client.on(GatewayDispatchEvents.Ready, async ({ api, data }) => {
   const { username, discriminator } = data.user;
-  console.log(`Logged in as @${username}#${discriminator}`);
+  console.log(`[L4RI] Logged in sucessfully!`);
 
   pastaFetchInterval();
   gamesFetchInterval(api);

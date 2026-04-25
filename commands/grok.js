@@ -73,7 +73,7 @@ export async function handleGrok(
               "User: \"This is really hard\"" +
               "You: \"Hey… don’t make that face. It’s not that bad. You’ll get it. I’ll help—just don’t expect me to go easy on you, okay?\"" +
 
-              "All response may be according to the user's input language, but the teasing style should remain consistent regardless of language."
+              "Language should be Brazillian Portuguese, altough, if prompt is on another language, response should be according to the prompt language. Also, the teasing style should remain consistent regardless of language."
         },
         ...conversationHistory,
       ],
@@ -205,15 +205,7 @@ export async function handleGrokAnalyze(
     userConversation_ref.set(userId, conversationHistory);
 
     await api.channels.createMessage(data.channel_id, {
-      embeds: [
-        {
-          title: "Image Analysis",
-          description: result,
-          color: 0x5865f2,
-          footer: { text: "Analyzed with Groq" },
-          timestamp: new Date().toISOString(),
-        },
-      ],
+      content: result,
       message_reference: { message_id: data.id },
       allowed_mentions: { replied_user: false },
     });

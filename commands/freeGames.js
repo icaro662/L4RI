@@ -7,7 +7,7 @@ let lastFreeGames = []; // cache of last known free games to detect changes
 let redditCache = []; // actual cached posts
 let lastRedditFetch = 0; // timestamp of last fetch to manage caching
 
-console.log("[L4RI] Initializing game deals fetch...")
+console.log("[L4RI] Fetching games...")
 
 export async function fetchRedditGames() {
   if (Date.now() - lastRedditFetch < 12 * 60 * 60 * 1000) {
@@ -42,7 +42,7 @@ export async function fetchRedditGames() {
         })
       ])
    
-    console.log("[L4RI] Fetching games...");
+    console.log("[L4RI] Games fetch status code: ", res2.status);
     //console.log("[2] Fetching games response 0:", res0.data.data.children);
     //console.log("[2] Fetching games response 1:", res1.data.data.children);
     //console.log("[2] Fetching games response 2:", res2.data.data.children);
