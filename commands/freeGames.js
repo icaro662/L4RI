@@ -1,5 +1,6 @@
 import axios from "axios";
 import { clients } from "../index.js";
+import { client } from "../index.js";
 
 const CHANNEL_ID = "1484334210085946326";
 
@@ -43,9 +44,9 @@ export async function fetchRedditGames() {
       ])
    
     console.log("[L4RI] Games fetch status code: ", res2.status);
-    //console.log("[2] Fetching games response 0:", res0.data.data.children);
-    //console.log("[2] Fetching games response 1:", res1.data.data.children);
-    //console.log("[2] Fetching games response 2:", res2.data.data.children);
+    //console.log("[2] Fetching games response 0:", res0.message.message.children);
+    //console.log("[2] Fetching games response 1:", res1.message.message.children);
+    //console.log("[2] Fetching games response 2:", res2.message.message.children);
     
     if (!res0.data?.data?.children || !res1.data?.data?.children || !res2.data?.data?.children) {
       console.warn("Reddit blocked or invalid response");
@@ -53,9 +54,9 @@ export async function fetchRedditGames() {
     }
 
     const result = [
-      ...res0.data.data.children, 
-      ...res1.data.data.children, 
-      ...res2.data.data.children
+      ...res0.message.message.children, 
+      ...res1.message.message.children, 
+      ...res2.message.message.children
     ]
 
     redditCache = result;
@@ -164,8 +165,9 @@ function normalizeTitle(title) {
     .trim();
 }
 
-export async function compareCache(api) {
+export async function compareCache(message) {
 
+  const channel = await client.channels.fetch(CHANNEL_ID);
   const redditGames = await fetchRedditGames();
   const freeGames = getFreeGames(redditGames);
 
@@ -192,7 +194,7 @@ export async function compareCache(api) {
       .map((g) => `[${g.name}](${g.url})`)
       .join("\n\n");
 
-    await api.channels.createMessage(CHANNEL_ID, {
+    await message.channel.send({
       embeds: [
         {
           title: isFirstRun ? "Current Promotions" : "New Promotions Found!",
@@ -203,7 +205,7 @@ export async function compareCache(api) {
       ],
     });
   } else {
-    await api.channels.createMessage(CHANNEL_ID, {
+    await message.channel.send({
       embeds: [
         {
           title: "Checked for Promotions",
@@ -220,11 +222,11 @@ export async function compareCache(api) {
   return unique;
 }
 
-export async function handleFreeCheck(api) {
-  await compareCache(api);
+export async function handleFreeCheck(message) {
+  await compareCache(message);
 }
 
-export function gamesFetchInterval(api) {
+export function gamesFetchInterval() {
 
   if (redditCache.length === 0) {
     fetchRedditGames()
@@ -232,7 +234,7 @@ export function gamesFetchInterval(api) {
 
   setInterval(
     () => {
-      compareCache(api).catch((err) => console.error("Interval error:", err));
+      compareCache(message).catch((err) => console.error("Interval error:", err));
     },
     1000 * 60 * 60 * 12,
   ); // every 12 hours

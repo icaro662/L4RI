@@ -1,19 +1,18 @@
 const MAX_HISTORY = 5;
 
 export async function handleGrok(
-  api,
-  data,
+  message,
   args,
   userConversation_ref_ref,
   clients,
 ) {
-  const userId = data.author.id;
+  const userId = message.author.id;
   const userText = args.join(" ");
 
   if (!userText) {
-    return api.channels.createMessage(data.channel_id, {
+    return message.reply ({
       content: "Usage: @index [your question]",
-      message_reference: { message_id: data.id },
+      message_reference: { message_id: message.id },
       allowed_mentions: { replied_user: false },
     });
   }
@@ -97,9 +96,9 @@ export async function handleGrok(
       }
 
       for (const chunk of chunks) {
-        await api.channels.createMessage(data.channel_id, {
+        await message.reply({
           content: chunk,
-          message_reference: { message_id: data.id },
+          message_reference: { message_id: message.id },
           allowed_mentions: { replied_user: false },
         });
 
@@ -107,50 +106,49 @@ export async function handleGrok(
 
       }
     } else {
-      await api.channels.createMessage(data.channel_id, {
+      await message.reply({
         content: response,
-        message_reference: { message_id: data.id },
+        message_reference: { message_id: message.id },
         allowed_mentions: { replied_user: false },
       });
     }
   } catch (error) {
     console.error("Error:", error);
 
-    await api.channels.createMessage(data.channel_id, {
+    await message.reply({
       content: "Sorry, something went wrong.",
-      message_reference: { message_id: data.id },
+      message_reference: { message_id: message.id },
       allowed_mentions: { replied_user: false },
     });
   }
 }
 
 export async function handleGrokAnalyze(
-  api,
-  data,
+  message,
   args,
   userConversation_ref,
   clients,
 ) {
-  const userId = data.author.id;
+  const userId = message.author.id;
   const userQuestion = args.join(" ") || "Describe this image in detail";
 
-  if (!data.attachments || data.attachments.length === 0) {
-    return api.channels.createMessage(data.channel_id, {
+  if (!message.attachments || message.attachments.length === 0) {
+    return message.reply({
       content: "Please attach an image to analyze",
-      message_reference: { message_id: data.id },
+      message_reference: { message_id: message.id },
       allowed_mentions: { replied_user: false },
     });
   }
 
-  const attachment = data.attachments[0];
+  const attachment = message.attachments[0];
 
   if (
     !attachment.content_type ||
     !attachment.content_type.startsWith("image/")
   ) {
-    return api.channels.createMessage(data.channel_id, {
+    return message.reply({
       content: "Usage: @index analyze || @index analise [image attachment]",
-      message_reference: { message_id: data.id },
+      message_reference: { message_id: message.id },
       allowed_mentions: { replied_user: false },
     });
   }
@@ -204,17 +202,17 @@ export async function handleGrokAnalyze(
 
     userConversation_ref.set(userId, conversationHistory);
 
-    await api.channels.createMessage(data.channel_id, {
+    await message.reply({
       content: result,
-      message_reference: { message_id: data.id },
+      message_reference: { message_id: message.id },
       allowed_mentions: { replied_user: false },
     });
   } catch (error) {
     console.error("Error:", error);
 
-    await api.channels.createMessage(data.channel_id, {
+    await message.reply({
       content: "Sorry, something went wrong.",
-      message_reference: { message_id: data.id },
+      message_reference: { message_id: message.id },
       allowed_mentions: { replied_user: false },
     });
   }

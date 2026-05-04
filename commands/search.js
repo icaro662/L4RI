@@ -1,10 +1,10 @@
-export async function handleSearch(api, data, args) {
+export async function handleSearch(message, args) {
     const query = args.join(" ");
   
     if (!query) {
-    return api.channels.createMessage(data.channel_id, {
+    return message.reply({
       content: "Usage: !search [your query]",
-      message_reference: { message_id: data.id },
+      message_reference: { message_id: message.id },
       allowed_mentions: { replied_user: false}
     });
   }
@@ -25,9 +25,9 @@ export async function handleSearch(api, data, args) {
     if (data_response.AbstractText && data_response.AbstractText.trim()) {
       const message = `**Answer for: "${query}"**\n\n${data_response.AbstractText}`;
       
-      return await api.channels.createMessage(data.channel_id, {
+      return await message.reply({
         content: message,
-        message_reference: { message_id: data.id },
+        message_reference: { message_id: message.id },
         allowed_mentions: { replied_user: false }
       });
     }
@@ -48,9 +48,9 @@ export async function handleSearch(api, data, args) {
     }
 
     if (results.length === 0) {
-      return api.channels.createMessage(data.channel_id, {
+      return message.reply({
         content: `No results found for: **${query}**`,
-        message_reference: { message_id: data.id },
+        message_reference: { message_id: message.id },
       });
     }
 
@@ -67,25 +67,25 @@ export async function handleSearch(api, data, args) {
         chunks.push(resultMessage.substring(i, i + 2000));
       }
       for (const chunk of chunks) {
-        await api.channels.createMessage(data.channel_id, {
+        await message.reply({
           content: chunk,
-          message_reference: { message_id: data.id },
+          message_reference: { message_id: message.id },
           allowed_mentions: { replied_user: false }
         });
       }
     } else {
-      await api.channels.createMessage(data.channel_id, {
+      await message.reply({
         content: resultMessage,
-        message_reference: { message_id: data.id },
+        message_reference: { message_id: message.id },
         allowed_mentions: { replied_user: false }
       });
     }
 
   } catch (error) {
     console.error(error);
-    await api.channels.createMessage(data.channel_id, {
+    await message.reply({
       content: "Sorry, an error occurred while fetching search results.",
-      message_reference: { message_id: data.id },
+      message_reference: { message_id: message.id },
     });
   }
 }

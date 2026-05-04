@@ -21,12 +21,12 @@ function getEmbedVariants(url) {
     return [url];
 }
 
-export async function urlParser(data, api) {
-  if (!data?.content) return;
+export async function urlParser(message) {
+  if (!message?.content) return;
 
-  else if (data.author?.bot) return;
+  else if (message.author?.bot) return;
 
-  const urls = extractUrls(data.content);
+  const urls = extractUrls(message.content);
 
   console.log("Extracted URLs:", urls);
 
@@ -41,14 +41,14 @@ export async function urlParser(data, api) {
 
   if (supported.length === 0) return;
 
-  await api.channels.deleteMessage(data.channel_id, data.id);
+  await message.delete(message.channel_id, message.id);
 
   for (let url of supported) {
     console.log("Processing URL:", url);
     const variants = getEmbedVariants(url);
     console.log("Embed Variants:", variants);
-    await api.channels.createMessage(data.channel_id, {
-      content: `${variants[0]}` + "\n" + `By ${data.author.username}`,
+    await message.reply({
+      content: `${variants[0]}` + "\n" + `By ${message.author.username}`,
     });
   }
 }

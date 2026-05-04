@@ -9,7 +9,7 @@ console.log("[L4RI] Fetching copypastas...");
 export async function fetchCopyPasta() {
     try {
         if (pastaCache.length > 0 || (Date.now() - lastPastaFetch) < 60000 * 60 * 24) { // 24 hours
-            console.log("[L4RI] Copypasta fetch is already filled. Using cached data.");
+            console.log("[L4RI] Copypasta fetch is already filled. Using cached message.");
             return pastaCache;
         }
 
@@ -57,11 +57,11 @@ export async function getCopyPasta() {
     }
 }
 
-export async function handleCopyPastaBR(api, data, args, clients) {
+export async function handleCopyPastaBR(message, args, clients) {
 
     try{    
         const copypasta = await getCopyPasta();
-        await api.channels.createMessage(data.channel_id, {
+        await message.send({
             embeds: [
             {
                 title: copypasta.title,
@@ -73,7 +73,7 @@ export async function handleCopyPastaBR(api, data, args, clients) {
       });
     } catch (err) {
     console.error("Error handling copypasta command:", err);
-    await api.channels.createMessage(data.channel_id, {
+    await message.send({
         embeds: [{content: "Sorry, something went wrong while fetching the copypasta.",}]
       });
     }
