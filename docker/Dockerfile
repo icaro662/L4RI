@@ -1,6 +1,6 @@
 FROM node:22
 
-WORKDIR /app
+WORKDIR /L4RI
 
 # Copy index files
 COPY package*.json ./
@@ -10,4 +10,4 @@ COPY . .
 RUN npm ci
 
 # Start index
-CMD ["node", "index.js"]
+CMD ["npm", "run", "start"]

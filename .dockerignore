@@ -1,0 +1,28 @@
+# dependencies
+node_modules
+
+# env / secrets
+.env
+.env.*
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# git
+.git
+.gitignore
+
+# docker (optional)
+Dockerfile
+.dockerignore
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+
+# build artifacts (if any)
+dist
+build
+coverage

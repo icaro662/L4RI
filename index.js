@@ -2,7 +2,7 @@ import { Client, Events } from '@fluxerjs/core';
 import { REST } from "@discordjs/rest";
 import { WebSocketManager } from "@discordjs/ws";
 import { Groq } from "groq-sdk";
-import "dotenv/config";
+import dotenv from "dotenv";
 import { gamesFetchInterval } from "./commands/freeGames.js";
 import { pastaFetchInterval } from "./commands/fun.js";
 import { urlParser } from "./utils/urlParser.js";
@@ -14,6 +14,8 @@ import { handleFreeCheck } from "./commands/freeGames.js";
 import { handleYoutube } from "./commands/youtube.js";
 import { handleCopyPastaBR } from "./commands/fun.js";
 import { handleAvatar } from "./commands/avatar.js";
+
+dotenv.config({ path: "./config/.env" });
 
 const userConversations = new Map();
 
