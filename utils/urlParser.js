@@ -2,6 +2,7 @@ function extractUrls(text) {
   return text.match(/https?:\/\/\S+/g) || [];
 }
 
+
 function getEmbedVariants(url) {
   if (url.includes("instagram.com") || url.includes("instagram/reel")) {
     return [
