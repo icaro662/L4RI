@@ -17,6 +17,6 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ~/projects/L4RI
+            cd ~/projects/L4RI/docker
             git pull
             docker compose up -d --build
