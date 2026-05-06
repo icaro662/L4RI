@@ -10,10 +10,9 @@ function getEmbedVariants(url) {
       url,
     ];
   } 
-    if (url.includes("twitter.com") || url.includes("x.com")) {
+    if (url.includes("twitter.com") || url.includes("//x.com")) {
     return [
       url.replace(/(twitter|x)\.com/, "fxtwitter.com"),
-      url.replace(/(twitter|x)\.com/, "vxtwitter.com"),
       url,
     ];
   }
@@ -41,14 +40,14 @@ export async function urlParser(message) {
 
   if (supported.length === 0) return;
 
-  await message.delete(message.channel_id, message.id);
-
   for (let url of supported) {
     console.log("Processing URL:", url);
     const variants = getEmbedVariants(url);
     console.log("Embed Variants:", variants);
-    await message.reply({
+    await message.send({
       content: `${variants[0]}` + "\n" + `By ${message.author.username}`,
     });
   }
+
+  await message.delete(message.channel_id, message.id);
 }
