@@ -6,6 +6,7 @@ let lastPastaFetch = 0;
 
 console.log("[L4RI] Fetching copypastas...");
 
+
 export async function fetchCopyPasta() {
     try {
         if (pastaCache.length > 0 || (Date.now() - lastPastaFetch) < 60000 * 60 * 24) { // 24 hours
@@ -42,6 +43,7 @@ export async function fetchCopyPasta() {
     }
 }
 
+
 export async function getCopyPasta() {
     await fetchCopyPasta(); // Ensure we have the latest copypasta
 
@@ -56,6 +58,7 @@ export async function getCopyPasta() {
     return pastaCache[Randomizer];
     }
 }
+
 
 export async function handleCopyPastaBR(message, args, clients) {
 
@@ -78,6 +81,7 @@ export async function handleCopyPastaBR(message, args, clients) {
       });
     }
 }
+
 
 export async function pastaFetchInterval() {
     if (pastaCache.length === 0) {

@@ -8,7 +8,8 @@ let lastFreeGames = []; // cache of last known free games to detect changes
 let redditCache = []; // actual cached posts
 let lastRedditFetch = 0; // timestamp of last fetch to manage caching
 
-console.log("[L4RI] Fetching games...")
+console.log("[L4RI] Fetching games...");
+
 
 export async function fetchRedditGames() {
   if (Date.now() - lastRedditFetch < 12 * 60 * 60 * 1000) {
@@ -44,9 +45,9 @@ export async function fetchRedditGames() {
       ])
    
     console.log("[L4RI] Games fetch status code: ", res2.status);
-    //console.log("[2] Fetching games response 0:", res0.message.message.children);
-    //console.log("[2] Fetching games response 1:", res1.message.message.children);
-    //console.log("[2] Fetching games response 2:", res2.message.message.children);
+    //console.log("[2] Fetching games response 0:", res0.data.data.children);
+    //console.log("[2] Fetching games response 1:", res1.data.data.children);
+    //console.log("[2] Fetching games response 2:", res2.data.data.children);
     
     if (!res0.data?.data?.children || !res1.data?.data?.children || !res2.data?.data?.children) {
       console.warn("Reddit blocked or invalid response");
@@ -54,9 +55,9 @@ export async function fetchRedditGames() {
     }
 
     const result = [
-      ...res0.message.message.children, 
-      ...res1.message.message.children, 
-      ...res2.message.message.children
+      ...res0.data.data.children, 
+      ...res1.data.data.children, 
+      ...res2.data.data.children
     ]
 
     redditCache = result;
@@ -70,6 +71,7 @@ export async function fetchRedditGames() {
     return redditCache;
   }
 }
+
 
 export function getFreeGames(result) {
 return result
@@ -92,6 +94,7 @@ return result
   }))
   .filter((g) => g.url && g.name);
 }
+
 
 export function normalizeUrl(rawUrl) {
   if (!rawUrl || typeof rawUrl !== "string") return null;
@@ -156,6 +159,7 @@ export function normalizeUrl(rawUrl) {
   }
 }
 
+
 function normalizeTitle(title) {
   return title
     .toLowerCase()
@@ -165,9 +169,8 @@ function normalizeTitle(title) {
     .trim();
 }
 
-export async function compareCache(message) {
-
-  const channel = await client.channels.fetch(CHANNEL_ID);
+export async function compareCache(channel) {
+  
   const redditGames = await fetchRedditGames();
   const freeGames = getFreeGames(redditGames);
 
@@ -222,19 +225,23 @@ export async function compareCache(message) {
   return unique;
 }
 
+
 export async function handleFreeCheck(message) {
-  await compareCache(message);
+  const channel = message.channel;
+  await compareCache(channel);
 }
 
-export function gamesFetchInterval() {
+
+export async function gamesFetchInterval() {
 
   if (redditCache.length === 0) {
-    fetchRedditGames()
+    await fetchRedditGames()
   }
 
-  setInterval(
-    () => {
-      compareCache(message).catch((err) => console.error("Interval error:", err));
+  setInterval(async () => {
+    const channel = await client.channels.fetch(CHANNEL_ID);
+
+    compareCache(channel).catch((err) => console.error("Interval error:", err));
     },
     1000 * 60 * 60 * 12,
   ); // every 12 hours

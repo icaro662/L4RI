@@ -15,10 +15,9 @@ import { handleYoutube } from "./commands/youtube.js";
 import { handleCopyPastaBR } from "./commands/fun.js";
 import { handleAvatar } from "./commands/avatar.js";
 
-dotenv.config({ path: "./config/.env" });
+dotenv.config({ path: "./config/.env", quiet: true });
 
 const userConversations = new Map();
-
 const PREFIX = "!";
 const MENTION = "<@1483928797831864671>";
 
@@ -39,6 +38,7 @@ Object.entries(clients).forEach(([name, key]) => {
   }
 });
 
+
 const rest = new REST({ api: "https://api.fluxer.app", version: "1" }).setToken(
   token,
 );
@@ -49,6 +49,7 @@ const gateway = new WebSocketManager({
   token,
   version: "1",
 });
+
 
 export const client = new Client();
 
@@ -136,6 +137,7 @@ client.on(Events.MessageCreate, async (message) => {
     console.error("FATAL MESSAGE ERROR:", err);
   }
 });
+
 
 client.on(Events.ClientReady, () => {
   console.log(`[L4RI] Logged in sucessfully!`);
