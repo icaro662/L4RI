@@ -17,6 +17,7 @@ import { handleAvatar } from "./commands/avatar.js";
 
 dotenv.config({ path: "./config/.env", quiet: true });
 
+const testTarget = process.env.TEST_COMMUNITY_ID;
 const userConversations = new Map();
 const PREFIX = "!";
 const MENTION = "<@1483928797831864671>";
@@ -54,6 +55,11 @@ const gateway = new WebSocketManager({
 export const client = new Client();
 
 client.on(Events.MessageCreate, async (message) => {
+
+if (message.guildId != testTarget) {
+  return
+}
+
   try {
     if (message.content.startsWith(MENTION)) {
       try {
@@ -140,6 +146,10 @@ client.on(Events.MessageCreate, async (message) => {
 
 
 client.on(Events.ClientReady, () => {
+
+  if (process.env.COMMUNITY_ID != null) {
+
+  }
   console.log(`[L4RI] Logged in sucessfully!`);
 
   //console.log("message.author:",)
