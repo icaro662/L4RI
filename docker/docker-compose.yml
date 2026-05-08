@@ -1,0 +1,9 @@
+services:
+  bot:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: L4RI
+    env_file:
+      - ../config/.env
+    restart: unless-stopped
