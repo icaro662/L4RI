@@ -17,7 +17,7 @@ import { handleAvatar } from "./commands/avatar.js";
 
 dotenv.config({ path: "./config/.env", quiet: true });
 
-const testTarget = process.env.TEST_COMMUNITY_ID;
+const testTarget = process.env.TEST_COMMUNITY_ID || null;
 const userConversations = new Map();
 const PREFIX = "!";
 const MENTION = "<@1483928797831864671>";
@@ -55,11 +55,9 @@ const gateway = new WebSocketManager({
 export const client = new Client();
 
 client.on(Events.MessageCreate, async (message) => {
-
-if (message.guildId != testTarget) {
+if (message.guildId != testTarget && testTarget != null) {
   return
-}
-
+} else {
   try {
     if (message.content.startsWith(MENTION)) {
       try {
@@ -142,7 +140,8 @@ if (message.guildId != testTarget) {
   } catch (err) {
     console.error("FATAL MESSAGE ERROR:", err);
   }
-});
+}});
+
 
 
 client.on(Events.ClientReady, () => {
