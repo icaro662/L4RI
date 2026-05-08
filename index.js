@@ -18,9 +18,14 @@ import { handleAvatar } from "./commands/avatar.js";
 dotenv.config({ path: "./config/.env", quiet: true });
 
 const testTarget = process.env.TEST_COMMUNITY_ID || null;
+const communityTarget = process.env.COMMUNITY_ID || null;
+
+const prodEnv = process.env.PROD;
+const testEnv = process.env.TEST;
+
 const userConversations = new Map();
-const PREFIX = "!";
-const MENTION = "<@1483928797831864671>";
+const prefix = "!";
+const mention = "<@1483928797831864671>";
 
 const token = process.env["FLUXER_BOT_TOKEN"];
 if (!token) {
@@ -55,25 +60,28 @@ const gateway = new WebSocketManager({
 export const client = new Client();
 
 client.on(Events.MessageCreate, async (message) => {
-if (message.guildId != testTarget && testTarget != null) {
+if ((testEnv === "true" && prodEnv === "false") && message.guildId != testTarget) {
   return
-} else {
+} if ((testEnv === "false" && prodEnv === "true") && message.guildId == testTarget) {
+  return
+}
+else {
   try {
-    if (message.content.startsWith(MENTION)) {
+    if (message.content.startsWith(mention)) {
       try {
         if (message.attachments?.size > 0) {
-          const question = message.content.replace(MENTION, "").trim();
+          const question = message.content.replace(mention, "").trim();
           await handleGrokAnalyze(message, [question], userConversations, clients);
         } else {
-          const question = message.content.replace(MENTION, "").trim();
+          const question = message.content.replace(mention, "").trim();
           await handleGrok(message, [question], userConversations, clients);
         }
       } catch (error) {
         console.error("Unexpected error:", error);
       }
     } 
-    else if (message.content.startsWith(PREFIX)) {
-      const args = message.content.slice(PREFIX.length).trim().split(" ");
+    else if (message.content.startsWith(prefix)) {
+      const args = message.content.slice(prefix.length).trim().split(" ");
       const command = args.shift().toLowerCase();
       
       try {
