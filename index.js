@@ -152,16 +152,12 @@ else {
 
 
 
-client.on(Events.ClientReady, () => {
-
-  if (process.env.COMMUNITY_ID != null) {
-
-  }
+client.on(Events.Ready, () => {
   console.log(`[L4RI] Logged in sucessfully!`);
 
   //console.log("message.author:",)
   pastaFetchInterval();
-  gamesFetchInterval();
+  gamesFetchInterval(client);
 });
 
 client.login(token);

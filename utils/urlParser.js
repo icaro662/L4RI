@@ -6,9 +6,7 @@ function extractUrls(text) {
 function getEmbedVariants(url) {
   if (url.includes("instagram.com") || url.includes("instagram/reel")) {
     return [
-      url.replace("instagram.com", "ddinstagram.com"),
-      url.replace("instagram.com", "ssinstagram.com"),
-      url,
+      url
     ];
   } 
     if (url.includes("twitter.com") || url.includes("//x.com")) {

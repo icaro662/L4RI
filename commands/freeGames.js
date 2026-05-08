@@ -1,6 +1,7 @@
 import axios from "axios";
 import { clients } from "../index.js";
 import { client } from "../index.js";
+import { Channel } from "@fluxerjs/core";
 
 const CHANNEL_ID = "1484334210085946326";
 
@@ -169,8 +170,9 @@ function normalizeTitle(title) {
     .trim();
 }
 
-export async function compareCache(channel) {
-  
+export async function compareCache(client) {
+  const channel = await client.channels.fetch(CHANNEL_ID)
+ 
   const redditGames = await fetchRedditGames();
   const freeGames = getFreeGames(redditGames);
 
@@ -197,7 +199,7 @@ export async function compareCache(channel) {
       .map((g) => `[${g.name}](${g.url})`)
       .join("\n\n");
 
-    await message.channel.send({
+    await channel.send({
       embeds: [
         {
           title: isFirstRun ? "Current Promotions" : "New Promotions Found!",
@@ -208,7 +210,7 @@ export async function compareCache(channel) {
       ],
     });
   } else {
-    await message.channel.send({
+    await channel.send({
       embeds: [
         {
           title: "Checked for Promotions",
@@ -227,22 +229,17 @@ export async function compareCache(channel) {
 
 
 export async function handleFreeCheck(message) {
-  const channel = message.channel;
-  await compareCache(channel);
+  await compareCache(message);
 }
 
 
-export async function gamesFetchInterval() {
-
+export async function gamesFetchInterval(client) {
   if (redditCache.length === 0) {
     await fetchRedditGames()
   }
 
   setInterval(async () => {
-    const channel = await client.channels.fetch(CHANNEL_ID);
-
-    compareCache(channel).catch((err) => console.error("Interval error:", err));
+    compareCache(client).catch((err) => console.error("Interval error:", err));
     },
-    1000 * 60 * 60 * 12,
-  ); // every 12 hours
+    1000 * 60 * 60 * 12); // every 12 hours
 }
