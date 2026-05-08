@@ -10,4 +10,4 @@ COPY . .
 RUN npm ci
 
 # Start index
-CMD ["npm", "run", "docker"]
+CMD ["npm", "run", "start"]

@@ -4,7 +4,6 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "docker": "PROD=true TEST=false node index.js",
     "start": "node index.js",
     "dev": "node --watch index.js"
   },

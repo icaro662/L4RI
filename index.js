@@ -62,7 +62,7 @@ export const client = new Client();
 client.on(Events.MessageCreate, async (message) => {
 if ((testEnv === "true" && prodEnv === "false") && message.guildId != testTarget) {
   return
-} if ((testEnv === "false" && prodEnv === "true") && message.guildId == testTarget) {
+} else if ((testEnv === "false" && prodEnv === "true") && message.guildId == testTarget) {
   return
 }
 else {
