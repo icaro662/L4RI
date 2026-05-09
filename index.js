@@ -14,6 +14,7 @@ import { handleFreeCheck } from "./commands/freeGames.js";
 import { handleYoutube } from "./commands/youtube.js";
 import { handleCopyPastaBR } from "./commands/fun.js";
 import { handleAvatar } from "./commands/avatar.js";
+import { handleCanvas } from './commands/canvas.js';
 
 dotenv.config({ path: "./config/.env", quiet: true });
 
@@ -60,6 +61,11 @@ const gateway = new WebSocketManager({
 export const client = new Client();
 
 client.on(Events.MessageCreate, async (message) => {
+
+//console.log("message:", message)
+//console.log("message.content:", message.content)
+//console.log("message.attachments:", message.attachments)
+
 if ((testEnv === "true" && prodEnv === "false") && message.guildId != testTarget) {
   return
 } else if ((testEnv === "false" && prodEnv === "true") && message.guildId == testTarget) {
@@ -101,6 +107,8 @@ else {
           await handleAvatar(message, args)
         } else if (command === "copypasta") {
           await handleCopyPastaBR(message, args, clients);
+        } else if (command === "canvas") {
+          await handleCanvas(message, args, clients)
         } else if (command === "help") {
           await message.reply({
             embeds: [
@@ -121,6 +129,7 @@ else {
           !check or !checkfree - Check for new free games (Steam, Epic, GOG)\n
           !copypasta - Get a random copypasta from r/BrazilianCopypasta\n
           !avatar or !avatar @mention - Get your own avatar or mentioned member's avatar\n
+          !canvas caption [text] - insert a caption into a image\n
                 
           Other commands:\n
                 
