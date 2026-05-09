@@ -159,10 +159,14 @@ else {
   }
 }});
 
+
 client.on('error', (err) => {
   console.error('[WebSocket Error]', err.message);
 });
 
+client.on('shardError', (err, shardId) => {
+  console.error(`[Shard ${shardId} Error]`, err.message);
+});
 
 client.on(Events.Ready, () => {
   console.log(`[L4RI] Logged in sucessfully!`);
