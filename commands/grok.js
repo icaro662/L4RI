@@ -132,7 +132,7 @@ export async function handleGrokAnalyze(
   clients,
 ) {
   const userId = message.author.id;
-  const userQuestion = args.join(" ") || "Describe this image in detail";
+  const userQuestion = args.join(" ") || "Descreva esta imagem com detalhe";
 
   if (!message.attachments || message.attachments.length === 0) {
     return message.reply({
@@ -142,18 +142,17 @@ export async function handleGrokAnalyze(
     });
   }
 
-  const attachment = message.attachments[0];
+  const attachment = message.attachments.first();
 
-  if (
-    !attachment.content_type ||
-    !attachment.content_type.startsWith("image/")
-  ) {
-    return message.reply({
-      content: "Usage: @index analyze || @index analise [image attachment]",
-      message_reference: { message_id: message.id },
-      allowed_mentions: { replied_user: false },
-    });
-  }
+  const validExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
+  const url = attachment.url.split('?')[0]; // strip query params Discord adds
+  const isImage = validExtensions.some(ext => url.endsWith(ext));
+
+  if (!attachment || !isImage) {
+      return await message.reply({ 
+        content: 'Invalid image format.' 
+      });
+    } 
 
   try {
     const axios = await import("axios");
@@ -168,7 +167,7 @@ export async function handleGrokAnalyze(
 
     conversationHistory.push({
       role: "user",
-      content: args.join(" ") || `Analyze this image: ${attachment.filename}`,
+      content: args.join(" ") || `Analise essa imagem: ${attachment.filename}`,
     });
 
     if (conversationHistory.length > 5) {
@@ -205,9 +204,11 @@ export async function handleGrokAnalyze(
     userConversation_ref.set(userId, conversationHistory);
 
     await message.reply({
-      content: result,
-      message_reference: { message_id: message.id },
-      allowed_mentions: { replied_user: false },
+      embeds: [{
+        description: result,
+        message_reference: { message_id: message.id },
+        allowed_mentions: { replied_user: false }
+      }]
     });
   } catch (error) {
     console.error("Error:", error);
