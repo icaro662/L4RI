@@ -159,6 +159,9 @@ else {
   }
 }});
 
+client.on('error', (err) => {
+  console.error('[WebSocket Error]', err.message);
+});
 
 
 client.on(Events.Ready, () => {
