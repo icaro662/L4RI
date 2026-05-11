@@ -170,7 +170,7 @@ client.on('shardError', (err, shardId) => {
 client.on(Events.Ready, () => {
   console.log(`[L4RI] Logged in sucessfully!`);
 
-  //console.log("message.author:",)
+  //console.log("client.channels:", client.channels)
   pastaFetchInterval();
   gamesFetchInterval(client);
 });

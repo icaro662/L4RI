@@ -170,8 +170,8 @@ function normalizeTitle(title) {
     .trim();
 }
 
-export async function compareCache(message) {
-  console.log("message.channels:", message)
+export async function compareCache(client) {
+  const channel = await client.channels.get(CHANNEL_ID);
  
   const redditGames = await fetchRedditGames();
   const freeGames = getFreeGames(redditGames);
@@ -199,7 +199,7 @@ export async function compareCache(message) {
       .map((g) => `[${g.name}](${g.url})`)
       .join("\n\n");
 
-    await message.sendTo(CHANNEL_ID, {
+    await channel.send({
       embeds: [
         {
           title: isFirstRun ? "Current Promotions" : "New Promotions Found!",
@@ -210,7 +210,7 @@ export async function compareCache(message) {
       ],
     });
   } else {
-    await message.sendTo(CHANNEL_ID, {
+    await channel.send({
       embeds: [
         {
           title: "Checked for Promotions",
@@ -228,8 +228,10 @@ export async function compareCache(message) {
 }
 
 
-export async function handleFreeCheck(message, client) {
-  await compareCache(message, client);
+export async function handleFreeCheck(message) {
+  console.log("client:", message.client);
+  console.log("client keys:", Object.keys(message.client ?? {}));
+  await compareCache(message);
 }
 
 
@@ -237,6 +239,7 @@ export async function gamesFetchInterval(client) {
   if (redditCache.length === 0) {
     await fetchRedditGames()
   }
+
 
   setInterval(async () => {
     compareCache(client).catch((err) => console.error("Interval error:", err));
