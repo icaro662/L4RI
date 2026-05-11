@@ -3,14 +3,24 @@ import { clients } from "../index.js";
 import { client } from "../index.js";
 import { Channel } from "@fluxerjs/core";
 
-const CHANNEL_ID = "1502071085360271422";
+const context = process.env.PROD;
+
+let CHANNEL_ID;
+
+if (context === "true") {
+  CHANNEL_ID = process.env.GAMESNOT_CHANNEL_ID
+} else if (context === "false") {
+  CHANNEL_ID = process.env.TEST_CHANNEL_ID
+}
+
+console.log(context)
+console.log("channel id:", CHANNEL_ID)
 
 let lastFreeGames = []; // cache of last known free games to detect changes
 let redditCache = []; // actual cached posts
 let lastRedditFetch = 0; // timestamp of last fetch to manage caching
 
 console.log("[L4RI] Fetching games...");
-
 
 export async function fetchRedditGames() {
   if (Date.now() - lastRedditFetch < 12 * 60 * 60 * 1000) {
