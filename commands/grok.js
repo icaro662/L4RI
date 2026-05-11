@@ -1,6 +1,5 @@
 const MAX_HISTORY = 5;
 
-
 export async function handleGrok(
   message,
   args,

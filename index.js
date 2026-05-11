@@ -19,7 +19,6 @@ import { handleCanvas } from './commands/canvas.js';
 dotenv.config({ path: "./config/.env", quiet: true });
 
 const testTarget = process.env.TEST_COMMUNITY_ID || null;
-const communityTarget = process.env.COMMUNITY_ID || null;
 
 const prodEnv = process.env.PROD;
 const testEnv = process.env.TEST;

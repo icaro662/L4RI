@@ -3,7 +3,7 @@ import { clients } from "../index.js";
 import { client } from "../index.js";
 import { Channel } from "@fluxerjs/core";
 
-const CHANNEL_ID = "1484334210085946326";
+const CHANNEL_ID = "1502071085360271422";
 
 let lastFreeGames = []; // cache of last known free games to detect changes
 let redditCache = []; // actual cached posts
@@ -170,8 +170,8 @@ function normalizeTitle(title) {
     .trim();
 }
 
-export async function compareCache(client) {
-  const channel = await client.channels.fetch(CHANNEL_ID)
+export async function compareCache(message) {
+  console.log("message.channels:", message)
  
   const redditGames = await fetchRedditGames();
   const freeGames = getFreeGames(redditGames);
@@ -199,7 +199,7 @@ export async function compareCache(client) {
       .map((g) => `[${g.name}](${g.url})`)
       .join("\n\n");
 
-    await channel.send({
+    await message.sendTo(CHANNEL_ID, {
       embeds: [
         {
           title: isFirstRun ? "Current Promotions" : "New Promotions Found!",
@@ -210,7 +210,7 @@ export async function compareCache(client) {
       ],
     });
   } else {
-    await channel.send({
+    await message.sendTo(CHANNEL_ID, {
       embeds: [
         {
           title: "Checked for Promotions",
@@ -228,8 +228,8 @@ export async function compareCache(client) {
 }
 
 
-export async function handleFreeCheck(message) {
-  await compareCache(message);
+export async function handleFreeCheck(message, client) {
+  await compareCache(message, client);
 }
 
 
