@@ -78,7 +78,7 @@ export async function fetchRedditGames() {
 
     return redditCache;
   } catch (err) {
-    console.error("Reddit error:", err.response?.status);
+    console.error("r/GameDeals error:", err.response?.status);
     return redditCache;
   }
 }
