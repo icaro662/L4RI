@@ -170,7 +170,7 @@ function normalizeTitle(title) {
     .trim();
 }
 
-export async function compareCache(client) {
+export async function compareCache() {
   const channel = await client.channels.get(CHANNEL_ID);
  
   const redditGames = await fetchRedditGames();
@@ -229,9 +229,7 @@ export async function compareCache(client) {
 
 
 export async function handleFreeCheck(message) {
-  console.log("client:", message.client);
-  console.log("client keys:", Object.keys(message.client ?? {}));
-  await compareCache(message);
+  await compareCache();
 }
 
 
@@ -242,7 +240,7 @@ export async function gamesFetchInterval(client) {
 
 
   setInterval(async () => {
-    compareCache(client).catch((err) => console.error("Interval error:", err));
+    compareCache().catch((err) => console.error("Interval error:", err));
     },
     1000 * 60 * 60 * 12); // every 12 hours
 }
