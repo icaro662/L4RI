@@ -34,6 +34,7 @@ export const clients = {
   groq: new Groq({ apiKey: process.env.GROQ_API_KEY }),
   pexelsKey: process.env.PEXELS_API_KEY,
   youtubeKey: process.env.YOUTUBE_API_KEY,
+  ItadKey: process.env.ITAD_API_KEY,
 };
 
 Object.entries(clients).forEach(([name, key]) => {

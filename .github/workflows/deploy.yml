@@ -21,14 +21,15 @@ jobs:
             git pull
               echo "FLUXER_BOT_TOKEN=${{ secrets.FLUXER_BOT_TOKEN }}" > ~/projects/L4RI/config/.env
               echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> ~/projects/L4RI/config/.env
-              echo "PEXELS_API_KEY=${{ secrets.PEXELS_API_KEY}}" >> ~/projects/L4RI/config/.env
-              echo "YOUTUBE_API_KEY=${{ secrets.YOUTUBE_API_KEY}}" >> ~/projects/L4RI/config/.env
-              echo "CLIENT_ID=${{ vars.CLIENT_ID}}" >> ~/projects/L4RI/config/.env
-              echo "GAMESNOT_CHANNEL_ID=${{ vars.GAMESNOT_CHANNEL_ID}}" >> ~/projects/L4RI/config/.env
-              echo "GUILD_ID=${{ vars.GUILD_ID}}" >> ~/projects/L4RI/config/.env
-              echo "TEST_COMMUNITY_ID=${{ vars.TEST_COMMUNITY_ID}}" >> ~/projects/L4RI/config/.env
-              echo "TEST_CHANNEL_ID=${{ vars.TEST_CHANNEL_ID}}" >> ~/projects/L4RI/config/.env
-              echo "PROD=${{ vars.PROD}}" >> ~/projects/L4RI/config/.env
-              echo "TEST=${{ vars.TEST}}" >> ~/projects/L4RI/config/.env
+              echo "PEXELS_API_KEY=${{ secrets.PEXELS_API_KEY }}" >> ~/projects/L4RI/config/.env
+              echo "YOUTUBE_API_KEY=${{ secrets.YOUTUBE_API_KEY }}" >> ~/projects/L4RI/config/.env
+              echo "ITAD_API_KEY=${{ secrets.ITAD_API_KEY }}" >> ~/projects/L4RI/config/.env
+              echo "CLIENT_ID=${{ vars.CLIENT_ID }}" >> ~/projects/L4RI/config/.env
+              echo "GAMESNOT_CHANNEL_ID=${{ vars.GAMESNOT_CHANNEL_ID }}" >> ~/projects/L4RI/config/.env
+              echo "GUILD_ID=${{ vars.GUILD_ID }}" >> ~/projects/L4RI/config/.env
+              echo "TEST_COMMUNITY_ID=${{ vars.TEST_COMMUNITY_ID }}" >> ~/projects/L4RI/config/.env
+              echo "TEST_CHANNEL_ID=${{ vars.TEST_CHANNEL_ID }}" >> ~/projects/L4RI/config/.env
+              echo "PROD=${{ vars.PROD }}" >> ~/projects/L4RI/config/.env
+              echo "TEST=${{ vars.TEST }}" >> ~/projects/L4RI/config/.env
             docker compose down
             docker compose up -d --build
