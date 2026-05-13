@@ -37,7 +37,6 @@ export async function handleImageGen(message, args) {
         title: prompt,
         image: { url: 'attachment://generated.png' },
         color: 0x5865F2,
-        footer: { text: "Powered by Pollinations.ai" }
       }],
       files: [{ data: buffer, name: 'generated.png' }]
     });
