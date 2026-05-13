@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 export async function handleImageGen(message, args) {
   const prompt = args.join(" ");
 
@@ -20,12 +22,24 @@ export async function handleImageGen(message, args) {
 
     const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
 
-    await loadingMessage.edit({
+    const response = await axios.get(imageUrl, {
+      responseType: 'arraybuffer',
+      timeout: 60000, // 60s timeout, pollinations can be slow
+    });
+
+    const buffer = Buffer.from(response.data);
+
+    await loadingMessage.delete();
+
+    await message.reply({
+      ping: false,
       embeds: [{
         title: prompt,
-        image: { url: imageUrl },
+        image: { url: 'attachment://generated.png' },
         color: 0x5865F2,
-      }]
+        footer: { text: "Powered by Pollinations.ai" }
+      }],
+      files: [{ data: buffer, name: 'generated.png' }]
     });
 
   } catch (error) {
