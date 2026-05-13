@@ -22,13 +22,32 @@ export async function handleImageGen(message, args) {
 
     const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
 
-    const response = await axios.get(imageUrl, {
-      responseType: 'arraybuffer',
-      timeout: 60000, // 60s timeout, pollinations can be slow
-    });
+    let response;
+    try {
+      response = await axios.get(imageUrl, {
+        responseType: 'arraybuffer',
+        timeout: 60000,
+      });
+    } catch (fetchError) {
+      const isTimeout = fetchError.code === 'ECONNABORTED';
+      const status = fetchError.response?.status;
+
+      const errorMsg = isTimeout
+        ? "Pollinations timed out. The prompt may be too complex, try again."
+        : status
+        ? `Pollinations returned HTTP ${status}.`
+        : `Unexpected error: ${fetchError.message}`;
+
+      return await loadingMessage.edit({
+        embeds: [{
+          title: "Image generation failed",
+          description: errorMsg,
+          color: 0xFF0000,
+        }]
+      });
+    }
 
     const buffer = Buffer.from(response.data);
-
     await loadingMessage.delete();
 
     await message.reply({
@@ -46,7 +65,9 @@ export async function handleImageGen(message, args) {
     await message.reply({
       ping: false,
       embeds: [{
-        title: "Sorry, an error occurred while generating the image.",
+        title: "Image generation failed",
+        description: `An unexpected error occurred: \`${error.message}\``,
+        color: 0xFF0000,
       }]
     });
   }
