@@ -15,6 +15,7 @@ import { handleYoutube } from "./commands/youtube.js";
 import { handleCopyPastaBR } from "./commands/fun.js";
 import { handleAvatar } from "./commands/avatar.js";
 import { handleCanvas } from './commands/canvas.js';
+import { handleImageGen } from './commands/imgGen.js';
 
 const testTarget = process.env.TEST_COMMUNITY_ID || null;
 
@@ -105,6 +106,8 @@ else {
           await handleAvatar(message, args)
         } else if (command === "copypasta") {
           await handleCopyPastaBR(message, args, clients);
+        } else if (command === "imagine") {
+          await handleImageGen(message, args)
         } else if (command === "canvas") {
           await handleCanvas(message, args, clients)
         } else if (command === "help") {
@@ -118,20 +121,21 @@ else {
                 
                   @L4RI [attachment] [question] - Analyze an image with Groq\n
                   @L4RI [question] - Ask Groq a question or have a conversation\n
+                  !imagine [text] - Generate a image based on the query\n
                         
                   General search commands:\n
                         
-                  !search [query] - Search the web using DuckDuckGo\n
+                  !search [query] - Search the web using Brave search\n
                   !img [query] - Search for images using Pexels\n
                   !yt or !youtube [query] - Search for YouTube videos\n
-                  !check or !checkfree - Check for new free games (Steam, Epic, GOG)\n
+                  !check or !checkfree - Check for new free games (Steam, Epic games)\n
                   !copypasta - Get a random copypasta from r/BrazilianCopypasta\n
                   !avatar or !avatar @mention - Get your own avatar or mentioned member's avatar\n
-                  !canvas caption [text] - insert a caption into a image\n
+                  !canvas caption [text] - Insert a caption into a image\n
                         
                   Other commands:\n
                         
-                  !help - Show this help message`
+                  !help - Show this helpful message`
                 },
               ],
           });
