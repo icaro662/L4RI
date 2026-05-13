@@ -1,4 +1,6 @@
-import { createCanvas, loadImage } from "@napi-rs/canvas";
+import { createCanvas, loadImage, GlobalFonts } from "@napi-rs/canvas";
+
+GlobalFonts.registerFromPath("utils/impact.ttf", 'Impact');
 
 function wrapText(ctx, text, maxWidth) {
   const words = text.split(' ');
@@ -60,7 +62,7 @@ async function Caption(message, args) {
     // Measure lines using a temp canvas
     const tempCanvas = createCanvas(img.width, 100);
     const tempCtx = tempCanvas.getContext('2d');
-    tempCtx.font = `900 ${fontSize}px sans-serif`;
+    tempCtx.font = `300 ${fontSize}px Impact`;
     const lines = wrapText(tempCtx, text, maxTextWidth);
 
     const captionHeight = Math.round(lines.length * lineHeight + padding * 2);
@@ -76,7 +78,7 @@ async function Caption(message, args) {
 
     // Draw each line of text
     ctx.fillStyle = 'black';
-    ctx.font = `900 ${fontSize}px sans-serif`;
+    ctx.font = `300 ${fontSize}px Impact`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
 
