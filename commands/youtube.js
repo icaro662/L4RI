@@ -5,13 +5,9 @@ export async function handleYoutube(message, args, clients) {
   const query = args.join(" ")
   
   if (!query) {
-    
     return message.reply({
+      ping: false,
       content: "Give me something to search!",
-      message_reference: { message_id: message.id },
-      allowed_mentions: {
-        replied_user: false 
-      }
     });
   }
   
@@ -37,9 +33,9 @@ export async function handleYoutube(message, args, clients) {
     });
   } catch (err) {
     console.error(err);
-    await message.send({
-      content: "Error searching YouTube.",
-      
+    await message.reply({
+      ping: false,
+      content: "Something went wrong during the processing",
     });
   }
 }

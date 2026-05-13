@@ -11,9 +11,8 @@ export async function handleGrok(
 
   if (!userText) {
     return message.reply ({
-      content: "Usage: @index [your question]",
-      message_reference: { message_id: message.id },
-      allowed_mentions: { replied_user: false },
+      ping: false,
+      content: "Usage: @L4RI [your question]",
     });
   }
 
@@ -97,9 +96,8 @@ export async function handleGrok(
 
       for (const chunk of chunks) {
         await message.reply({
+          ping: false,
           content: chunk,
-          message_reference: { message_id: message.id },
-          allowed_mentions: { replied_user: false },
         });
 
           await new Promise(resolve => setTimeout(resolve, 500));
@@ -107,18 +105,16 @@ export async function handleGrok(
       }
     } else {
       await message.reply({
+        ping: false,
         content: response,
-        message_reference: { message_id: message.id },
-        allowed_mentions: { replied_user: false },
       });
     }
   } catch (error) {
     console.error("Error:", error);
 
     await message.reply({
+      ping: false,
       content: "Sorry, something went wrong.",
-      message_reference: { message_id: message.id },
-      allowed_mentions: { replied_user: false },
     });
   }
 }
@@ -136,8 +132,6 @@ export async function handleGrokAnalyze(
   if (!message.attachments || message.attachments.length === 0) {
     return message.reply({
       content: "Please attach an image to analyze",
-      message_reference: { message_id: message.id },
-      allowed_mentions: { replied_user: false },
     });
   }
 
@@ -203,19 +197,17 @@ export async function handleGrokAnalyze(
     userConversation_ref.set(userId, conversationHistory);
 
     await message.reply({
+      ping: false,
       embeds: [{
         description: result,
-        message_reference: { message_id: message.id },
-        allowed_mentions: { replied_user: false }
       }]
     });
   } catch (error) {
     console.error("Error:", error);
 
     await message.reply({
+      ping: false,
       content: "Sorry, something went wrong.",
-      message_reference: { message_id: message.id },
-      allowed_mentions: { replied_user: false },
     });
   }
 }

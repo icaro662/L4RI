@@ -5,9 +5,8 @@ export async function handleImgSearch(message, args, clients) {
   
   if (!query) {
     return message.reply({
+      ping: false,
       content: "Usage: !imgsearch [search term]",
-      message_reference: { message_id: message.id },
-        allowed_mentions: { replied_user: false }
     });
   }
   
@@ -26,9 +25,8 @@ export async function handleImgSearch(message, args, clients) {
 
     if (!response.data.photos || response.data.photos.length === 0) {
       return message.reply({
+        ping: false,
         content: `No images found for: **${query}**`,
-        message_reference: { message_id: message.id },
-        allowed_mentions: { replied_user: false }
       });
     }
 
@@ -36,17 +34,15 @@ export async function handleImgSearch(message, args, clients) {
     const message = `**Search result for: "${query}"**\n\n[Image by ${photo.photographer}](${photo.photographer_url})\n${photo.src.large}`;
 
     await message.reply({
+      ping: false,
       content: message,
-      message_reference: { message_id: message.id },
-      allowed_mentions: { replied_user: false }
     });
 
   } catch (error) {
     console.error(error);
     await message.reply({
+      ping: false,
       content: "Sorry, something went wrong while searching for images.",
-      message_reference: { message_id: message.id },
-        allowed_mentions: { replied_user: false }
     });
   }
 }

@@ -8,6 +8,7 @@ async function Caption(message, args) {
 
         if (!attachment?.size > 0) {
             return await message.reply({
+                ping: false,
                 embeds: [{description:'No image found. Please insert a image.'}]
             })
         } 
@@ -18,12 +19,14 @@ async function Caption(message, args) {
 
         if (!attachment || !isImage) {
             return await message.reply({ 
+                ping: false,
                 embeds: [{description: 'Invalid image format.'}]
             });
         } 
         
         if (!text) {
             return await message.reply({
+                ping: false,
                 embeds: [{description: 'No text found. Please insert a text.'}]
             })
         }
@@ -46,11 +49,13 @@ async function Caption(message, args) {
         const buffer = canvas.toBuffer('image/png');
 
         await message.reply({
+            ping: false,
             files: [{data: buffer, name: 'caption.png'}]
         });
     } catch {
         
         return message.reply({
+            ping: false,
             embeds:[{description: 'mb g someshit went wrongs while processing yo request, yo.'}]
         })
     }

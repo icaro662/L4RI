@@ -108,34 +108,32 @@ else {
         } else if (command === "canvas") {
           await handleCanvas(message, args, clients)
         } else if (command === "help") {
-          await message.reply({
+          await message.reply({ 
+            ping: false,
             embeds: [
               {
                 title: "Available commands",
                 description: `
+                  Generative AI commands:\n
                 
-          Generative AI commands:\n
-                
-          @index [attachment] [question] - Analyze an image with Groq\n
-          @index [question] - Ask Groq a question or have a conversation\n
-                
-          General search commands:\n
-                
-          !search [query] - Search the web using DuckDuckGo\n
-          !img [query] - Search for images using Pexels\n
-          !yt or !youtube [query] - Search for YouTube videos\n
-          !check or !checkfree - Check for new free games (Steam, Epic, GOG)\n
-          !copypasta - Get a random copypasta from r/BrazilianCopypasta\n
-          !avatar or !avatar @mention - Get your own avatar or mentioned member's avatar\n
-          !canvas caption [text] - insert a caption into a image\n
-                
-          Other commands:\n
-                
-          !help - Show this help message`,
-                message_reference: { message_id: message.id },
-                allowed_mentions: { replied_user: false },
-              },
-            ],
+                  @L4RI [attachment] [question] - Analyze an image with Groq\n
+                  @L4RI [question] - Ask Groq a question or have a conversation\n
+                        
+                  General search commands:\n
+                        
+                  !search [query] - Search the web using DuckDuckGo\n
+                  !img [query] - Search for images using Pexels\n
+                  !yt or !youtube [query] - Search for YouTube videos\n
+                  !check or !checkfree - Check for new free games (Steam, Epic, GOG)\n
+                  !copypasta - Get a random copypasta from r/BrazilianCopypasta\n
+                  !avatar or !avatar @mention - Get your own avatar or mentioned member's avatar\n
+                  !canvas caption [text] - insert a caption into a image\n
+                        
+                  Other commands:\n
+                        
+                  !help - Show this help message`
+                },
+              ],
           });
         }
       } catch (error) {
@@ -144,9 +142,8 @@ else {
     } 
     else if (message.content === "casa cmg?") {
       await message.reply({
+        ping: false,
         content: "SIM CASO COM VC",
-        message_reference: { message_id: message.id },
-        allowed_mentions: { replied_user: false },
       });
     }
     else if (message.content.includes("http://") || message.content.includes("https://")) {
