@@ -33,9 +33,9 @@ if (!token) {
 
 export const clients = {
   groq: new Groq({ apiKey: process.env.GROQ_API_KEY }),
-  pexelsKey: process.env.PEXELS_API_KEY,
   youtubeKey: process.env.YOUTUBE_API_KEY,
   ItadKey: process.env.ITAD_API_KEY,
+  braveKey: process.env.BRAVE_API_KEY,
 };
 
 Object.entries(clients).forEach(([name, key]) => {
@@ -91,7 +91,7 @@ else {
       
       try {
         if (command === "search") {
-          await handleSearch(message, args);
+          await handleSearch(message, args, clients);
         } else if (command === "img") {
           await handleImgSearch(message, args, clients);
         } else if (command === "grok") {

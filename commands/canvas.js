@@ -1,17 +1,25 @@
-import { createCanvas, loadImage, GlobalFonts } from "@napi-rs/canvas";
+import {createCanvas, loadImage, GlobalFonts} from "@napi-rs/canvas";
 
-GlobalFonts.registerFromPath("utils/impact.ttf", 'Impact');
+GlobalFonts.registerFromPath("utils/impact.ttf","Impact");
 
 function wrapText(ctx, text, maxWidth) {
-  const words = text.split(' ');
+  const words = text.split(" ");
   const lines = [];
-  let currentLine = '';
+
+  let currentLine = "";
 
   for (const word of words) {
-    const testLine = currentLine ? `${currentLine} ${word}` : word;
-    const { width } = ctx.measureText(testLine);
+    const testLine = currentLine
+      ? `${currentLine} ${word}`
+      : word;
 
-    if (width > maxWidth && currentLine) {
+    const { width } =
+      ctx.measureText(testLine);
+
+    if (
+      width > maxWidth &&
+      currentLine
+    ) {
       lines.push(currentLine);
       currentLine = word;
     } else {
@@ -19,94 +27,240 @@ function wrapText(ctx, text, maxWidth) {
     }
   }
 
-  if (currentLine) lines.push(currentLine);
+  if (currentLine) {
+    lines.push(currentLine);
+  }
+
   return lines;
 }
 
 async function Caption(message, args) {
-  try {
-    const attachment = message.attachments.first();
-    const text = args.slice(1).join(" ").toUpperCase();
+  let loadingMessage;
 
-    if (!attachment?.size > 0) {
+  try {
+    const attachment =
+      message.attachments.first();
+
+    const text = args
+      .slice(1)
+      .join(" ")
+      .toUpperCase();
+
+    // Validate attachment
+    if (
+      !attachment ||
+      attachment.size <= 0
+    ) {
       return await message.reply({
         ping: false,
-        embeds: [{ description: 'No image found. Please insert a image.' }]
+        embeds: [{
+          title: "400 Bad Request",
+          description:
+            "No image attachment found.",
+          color: 0xFF0000,
+        }]
       });
     }
 
-    const validExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
-    const url = attachment.url.split('?')[0];
-    const isImage = validExtensions.some(ext => url.endsWith(ext));
+    // Validate extension
+    const validExtensions = [
+      ".png",
+      ".jpg",
+      ".jpeg",
+      ".gif",
+      ".webp"
+    ];
+
+    const url =
+      attachment.url.split("?")[0];
+
+    const isImage =
+      validExtensions.some(ext =>
+        url.endsWith(ext)
+      );
 
     if (!attachment || !isImage) {
       return await message.reply({
         ping: false,
-        embeds: [{ description: 'Invalid image format.' }]
+        embeds: [{
+          title: "415 Unsupported Media Type",
+          description:
+            "Invalid image format.",
+          color: 0xFF0000,
+        }]
       });
     }
 
+    // Validate text
     if (!text) {
       return await message.reply({
         ping: false,
-        embeds: [{ description: 'No text found. Please insert a text.' }]
+        embeds: [{
+          title: "400 Bad Request",
+          description:
+            "No caption text provided.",
+          color: 0xFF0000,
+        }]
       });
     }
 
-    const img = await loadImage(attachment.url);
-    const fontSize = Math.round(img.width * 0.07);
-    const lineHeight = fontSize * 1.3;
-    const padding = Math.round(img.width * 0.03);
-    const maxTextWidth = img.width - padding * 2;
+    // Loading message
+    loadingMessage =
+      await message.reply({
+        ping: false,
+        embeds: [{
+          title:
+            "Generating caption...",
+          color: 0x5865F2,
+        }]
+      });
 
-    // Measure lines using a temp canvas
-    const tempCanvas = createCanvas(img.width, 100);
-    const tempCtx = tempCanvas.getContext('2d');
-    tempCtx.font = `300 ${fontSize}px Impact`;
-    const lines = wrapText(tempCtx, text, maxTextWidth);
+    const img = await loadImage(
+      attachment.url
+    );
 
-    const captionHeight = Math.round(lines.length * lineHeight + padding * 2);
-    const canvas = createCanvas(img.width, img.height + captionHeight);
-    const ctx = canvas.getContext('2d');
+  
+    const scale = 2;
 
-    // Draw white caption box
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, img.width, captionHeight);
+    const fontSize = Math.round(
+      img.width * 0.08
+    );
 
-    // Draw image below caption
-    ctx.drawImage(img, 0, captionHeight);
+    const lineHeight =
+      fontSize * 1.3;
 
-    // Draw each line of text
-    ctx.fillStyle = 'black';
-    ctx.font = `300 ${fontSize}px Impact`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
+    const padding = Math.round(
+      img.width * 0.03
+    );
+
+    const maxTextWidth =
+      img.width - padding * 2;
+
+    const tempCanvas =
+      createCanvas(img.width, 100);
+
+    const tempCtx =
+      tempCanvas.getContext("2d");
+
+    tempCtx.font =
+      `300 ${fontSize}px Impact`;
+
+    const lines = wrapText(
+      tempCtx,
+      text,
+      maxTextWidth
+    );
+
+    const captionHeight =
+      Math.round(
+        lines.length *
+          lineHeight +
+        padding * 2
+      );
+
+    const finalWidth =
+      img.width * scale;
+
+    const finalHeight =
+      (img.height +
+        captionHeight) *
+      scale;
+
+    const canvas = createCanvas(
+      finalWidth,
+      finalHeight
+    );
+
+    const ctx =
+      canvas.getContext("2d");
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality =
+      "high";
+
+    ctx.fillStyle = "white";
+
+    ctx.fillRect(
+      0,
+      0,
+      finalWidth,
+      captionHeight * scale
+    );
+
+    ctx.drawImage(
+      img,
+      0,
+      captionHeight * scale,
+      img.width * scale,
+      img.height * scale
+    );
+
+    ctx.fillStyle = "black";
+
+    ctx.font =
+      `300 ${fontSize * scale}px Impact`;
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
 
     lines.forEach((line, i) => {
-      ctx.fillText(line, img.width / 2, padding + i * lineHeight);
+      ctx.fillText(
+        line,
+        finalWidth / 2,
+        (padding +
+          i * lineHeight) *
+          scale
+      );
     });
 
-    const buffer = canvas.toBuffer('image/png');
+    const buffer =
+      canvas.toBuffer("image/png");
+
+    if (
+      !buffer ||
+      buffer.length < 1000
+    ) {
+      throw new Error(
+        "INVALID_RENDER"
+      );
+    }
+
+    await loadingMessage.delete();
 
     await message.reply({
       ping: false,
-      files: [{ data: buffer, name: 'caption.png' }]
+      files: [{
+        data: buffer,
+        name: "caption.png"
+      }]
     });
 
-  } catch {
+  } catch (error) {
+    console.error(error);
+
+    if (loadingMessage) {
+      await loadingMessage
+        .delete()
+        .catch(() => {});
+    }
+
     return message.reply({
       ping: false,
-      embeds: [{ description: 'mb g someshit went wrongs while processing yo request, yo.' }]
+      embeds: [{
+        title:
+          "Something went wrong while processing your request",
+        color: 0xFF0000,
+      }]
     });
   }
 }
 
-async function Separator(message, args) {
+async function Separator(message,args) {
   if (args.includes("caption")) {
     await Caption(message, args);
   }
 }
 
-export async function handleCanvas(message, args) {
+export async function handleCanvas(message,args) {
   await Separator(message, args);
 }

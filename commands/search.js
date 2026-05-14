@@ -17,7 +17,7 @@ function cleanDescription(text) {
     .trim();
 }
 
-export async function handleSearch(message, args) {
+export async function handleSearch(message, args, clients) {
   const query = args.join(" ");
 
   if (!query) {
@@ -32,7 +32,7 @@ export async function handleSearch(message, args) {
       headers: {
         'Accept': 'application/json',
         'Accept-Encoding': 'gzip',
-        'X-Subscription-Token': process.env.BRAVE_API_KEY,
+        'X-Subscription-Token': clients.braveKey,
       },
       params: {
         q: query,

@@ -21,7 +21,6 @@ jobs:
             git pull
               echo "FLUXER_BOT_TOKEN=${{ secrets.FLUXER_BOT_TOKEN }}" > ~/projects/L4RI/config/.env
               echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> ~/projects/L4RI/config/.env
-              echo "PEXELS_API_KEY=${{ secrets.PEXELS_API_KEY }}" >> ~/projects/L4RI/config/.env
               echo "YOUTUBE_API_KEY=${{ secrets.YOUTUBE_API_KEY }}" >> ~/projects/L4RI/config/.env
               echo "ITAD_API_KEY=${{ secrets.ITAD_API_KEY }}" >> ~/projects/L4RI/config/.env
               echo "BRAVE_API_KEY=${{ secrets.BRAVE_API_KEY }}" >> ~/projects/L4RI/config/.env
