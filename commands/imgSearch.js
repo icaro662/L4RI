@@ -94,56 +94,13 @@ export async function handleImgSearch(message, args, clients) {
       });
     }
 
-    let imageResponse;
-
-    try {
-      imageResponse = await axios.get(img.properties.url, {
-        responseType: 'arraybuffer',
-        timeout: 20000,
-      });
-
-    } catch (imageError) {
-      const isTimeout = imageError.code === 'ECONNABORTED';
-
-      const errorMsg = isTimeout
-        ? "Image download timed out."
-        : `Failed to download image: ${imageError.message}`;
-
-      return await loadingMessage.edit({
-        embeds: [{
-          title: "Image fetch failed",
-          description: errorMsg,
-          color: 0xFF0000,
-        }]
-      });
-    }
-
-    const buffer = Buffer.from(imageResponse.data);
-
-    const contentType = imageResponse.headers['content-type'] || 'image/jpeg';
-
-    let extension = 'jpg';
-
-    if (contentType.includes('png')) extension = 'png';
-    else if (contentType.includes('webp')) extension = 'webp';
-    else if (contentType.includes('gif')) extension = 'gif';
-
-    const filename = `image.${extension}`;
-
-    await loadingMessage.delete();
-
-    await message.reply({
-      ping: false,
+    await loadingMessage.edit({
       embeds: [{
         title: `Search result for: "${query}"`,
         image: {
-          url: `attachment://${filename}`
+          url: img.properties.url
         },
         color: 0x5865F2,
-      }],
-      files: [{
-        data: buffer,
-        name: filename,
       }]
     });
 

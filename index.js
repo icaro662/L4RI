@@ -1,4 +1,4 @@
-import './config/env.js'; // must be first
+import './config/env.js';
 import { Client, Events } from '@fluxerjs/core';
 import { REST } from "@discordjs/rest";
 import { WebSocketManager } from "@discordjs/ws";
