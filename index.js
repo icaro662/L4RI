@@ -16,6 +16,8 @@ import { handleCopyPastaBR } from "./commands/fun.js";
 import { handleAvatar } from "./commands/avatar.js";
 import { handleCanvas } from './commands/canvas.js';
 import { handleImageGen } from './commands/imgGen.js';
+import { handleWikiRandom } from './commands/wiki.js';
+import { handleWikiSearch } from './commands/wiki.js';
 
 const userConversations = new Map();
 const prefix = "!";
@@ -39,7 +41,6 @@ Object.entries(clients).forEach(([name, key]) => {
   }
 });
 
-
 const rest = new REST({ api: "https://api.fluxer.app", version: "1" }).setToken(
   token,
 );
@@ -51,14 +52,10 @@ const gateway = new WebSocketManager({
   version: "1",
 });
 
-
 export const client = new Client();
 
 client.on(Events.MessageCreate, async (message) => {
 
-//console.log("message:", message)
-//console.log("message.content:", message.content)
-//console.log("message.attachments:", message.attachments)
 if (message.author.bot) return;
 
   try {
@@ -72,7 +69,7 @@ if (message.author.bot) return;
           await handleGrok(message, [question], userConversations, clients);
         }
       } catch (error) {
-        console.error("Unexpected error:", error);
+        console.error("An unexpected error occurred:", error);
       }
     } 
     else if (message.content.startsWith(prefix)) {
@@ -109,29 +106,31 @@ if (message.author.bot) return;
             ping: false,
             embeds: [
               {
-                title: "Available commands",
+                title: "Comandos disponíveis",
                 description: `
-                  Generative AI commands:\n
+                  Comandos de IA Generativa:\n
                 
-                  @L4RI [attachment] [question] - Analyze an image with Groq\n
-                  @L4RI [question] - Ask Groq a question or have a conversation\n
-                  !imagine [text] - Generate a image based on the query\n
+                  @L4RI [imagem] [texto] - Analisa uma imagem\n
+                  @L4RI [texto] - Realiza uma pergunta ou inicia uma conversa com a L4RI\n
+                  !imagine [texto] - Gera uma imagem com base no texto inputado\n
                         
-                  General search commands:\n
+                  Comandos de busca:\n
                         
-                  !search [query] - Search the web using Brave search\n
-                  !img [query] - Search for images using Pexels\n
-                  !yt or !youtube [query] - Search for YouTube videos\n
-                  !check or !checkfree - Check for new free games (Steam, Epic games)\n
-                  !copypasta - Get a random copypasta from r/BrazilianCopypasta\n
-                  !avatar or !avatar @mention - Get your own avatar or mentioned member's avatar\n
-                  !canvas caption [text] - Insert a caption into a image\n
+                  !search [termo] - Procura algo na web\n
+                  !img [termo] - Procura por uma imagem na web\n
+                  !yt ou !youtube [termo] - Procura por vídeos no YouTube\n
+                  !check ou !checkfree - Verifica jogos grátis (Steam, Epic games)\n
+                  !copypasta - Procura por uma copypasta aleatória em r/BrazilianCopypasta\n
                   !wiki [termo] - Procura por um artigo na Wikipedia\n
                   !randompedia - Retorna um artigo aleatório da Wikipedia\n
+                  
+                  Comandos de utilidade:\n
+                  !avatar or !avatar @menção - Retorna seu avatar ou avatar do membro mencionado\n
+                  !canvas caption [texto] - Insere um texto em uma imagem\n
                         
-                  Other commands:\n
+                  Outros comandos:\n
                         
-                  !help - Show this helpful message`
+                  !help - Mostra essa mensagem de ajuda\n`
                 },
               ],
           });
@@ -152,7 +151,7 @@ if (message.author.bot) return;
   } catch (err) {
     console.error("FATAL MESSAGE ERROR:", err);
   }
-}});
+});
 
 
 client.on('error', (err) => {
@@ -166,7 +165,6 @@ client.on('shardError', (err, shardId) => {
 client.on(Events.Ready, () => {
   console.log(`[L4RI] Logged in sucessfully!`);
 
-  //console.log("client.channels:", client.channels)
   pastaFetchInterval();
   gamesFetchInterval(client);
 });
