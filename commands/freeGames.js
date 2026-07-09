@@ -1,9 +1,7 @@
 import axios from "axios";
 import { client } from "../index.js";
 
-const CHANNEL_ID = process.env.PROD === "true"
-  ? process.env.GAMESNOT_CHANNEL_ID
-  : process.env.TEST_CHANNEL_ID;
+const CHANNEL_ID = process.env.TARGET_GAMESNOT_CHANNEL_ID;
 
 let lastFreeGames = [];
 let itadCache = [];

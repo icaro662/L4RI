@@ -1,4 +1,4 @@
-import './config/env.js';
+import './utils/envHelper.js';
 import { Client, Events } from '@fluxerjs/core';
 import { REST } from "@discordjs/rest";
 import { WebSocketManager } from "@discordjs/ws";
@@ -16,11 +16,6 @@ import { handleCopyPastaBR } from "./commands/fun.js";
 import { handleAvatar } from "./commands/avatar.js";
 import { handleCanvas } from './commands/canvas.js';
 import { handleImageGen } from './commands/imgGen.js';
-
-const testTarget = process.env.TEST_COMMUNITY_ID || null;
-
-const prodEnv = process.env.PROD;
-const testEnv = process.env.TEST;
 
 const userConversations = new Map();
 const prefix = "!";
@@ -64,13 +59,8 @@ client.on(Events.MessageCreate, async (message) => {
 //console.log("message:", message)
 //console.log("message.content:", message.content)
 //console.log("message.attachments:", message.attachments)
+if (message.author.bot) return;
 
-if ((testEnv === "true" && prodEnv === "false") && message.guildId != testTarget) {
-  return
-} else if ((testEnv === "false" && prodEnv === "true") && message.guildId == testTarget) {
-  return
-}
-else {
   try {
     if (message.content.startsWith(mention)) {
       try {
@@ -110,6 +100,10 @@ else {
           await handleImageGen(message, args)
         } else if (command === "canvas") {
           await handleCanvas(message, args, clients)
+        } else if (command === "randompedia") {
+          await handleWikiRandom(message, args);
+        } else if (command === "wiki") {
+          await handleWikiSearch(message, args);
         } else if (command === "help") {
           await message.reply({ 
             ping: false,
@@ -132,6 +126,8 @@ else {
                   !copypasta - Get a random copypasta from r/BrazilianCopypasta\n
                   !avatar or !avatar @mention - Get your own avatar or mentioned member's avatar\n
                   !canvas caption [text] - Insert a caption into a image\n
+                  !wiki [termo] - Procura por um artigo na Wikipedia\n
+                  !randompedia - Retorna um artigo aleatório da Wikipedia\n
                         
                   Other commands:\n
                         
