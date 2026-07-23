@@ -1,4 +1,7 @@
-//url randomizer command
+/*
+Commands for wikipedia article fetch.
+Search by term or get a random article.
+*/
 import axios from "axios";
 import { client } from "../index.js";
 
