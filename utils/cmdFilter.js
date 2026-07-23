@@ -10,6 +10,12 @@ export async function handleCommand(
   prefix = DEFAULT_PREFIX,
   mention = DEFAULT_MENTION,
 ) {
+  const targetGuildId = process.env.TARGET_GUILD_ID;
+
+  if (targetGuildId && message.guild?.id && message.guild.id !== targetGuildId) {
+    return;
+  }
+
   if (message.author.bot) return;
 
   try {
