@@ -1,4 +1,5 @@
 import uniHandler from "./uniHandler.js";
+import { urlParser } from "./urlParser.js";
 
 const DEFAULT_PREFIX = "!";
 const DEFAULT_MENTION = "<@1483928797831864671>";

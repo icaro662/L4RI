@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "node --watch index.js"
+    "dev": "node --watch index.js",
+    "postinstall": "npx playwright install chromium"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +20,8 @@
     "axios": "^1.13.6",
     "discord.js": "^14.25.1",
     "dotenv": "^17.3.1",
-    "groq-sdk": "^1.1.1"
+    "groq-sdk": "^1.1.1",
+    "playwright": "^1.61.1",
+    "yt-dlp-exec": "^1.0.2"
   }
 }
