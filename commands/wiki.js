@@ -19,7 +19,7 @@ async function getWikiArticle(message, args) {
         const data = res.data;
 
         if (data.type === "disambiguation") {
-            await message.reply("O termo de busca utilizado é muito ambiguio. Por favor, tente ser mais específico.");
+            await message.reply("The search term is too ambiguous. Please try to be more specific.");
             return;
         }
 
@@ -35,8 +35,8 @@ async function getWikiArticle(message, args) {
             ]
         });
     } catch (error) {
-        console.error("Erro ao buscar artigo da Wikipedia:", error);
-        await message.reply("Desculpe, não consegui encontrar um artigo da Wikipedia para o termo de busca fornecido.");
+        console.error("Some error occurred:", error);
+        await message.reply("Couldn't find a wikipedia article for that search term.");
     }
 }
 
@@ -64,8 +64,8 @@ async function getRandomWiki(message, args) {
             ]
         });
     } catch (error) {
-        console.error("Erro ao buscar artigo aleatório da Wikipedia:", error);
-        await message.reply("Desculpe, não consegui buscar um artigo aleatório da Wikipedia no momento.");
+        console.error("Some error occurred:", error);
+        await message.reply("Couldn't find a random wikipedia article at the moment.");
     }
 }
 
