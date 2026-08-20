@@ -1,3 +1,12 @@
+/*
+Command for searching videos through youtube.
+
+Args:
+message: The message object from the Discord API.
+args: An array of arguments passed to the command (the user's search query).
+clients: An object containing the YouTube API key.
+*/
+
 import axios from "axios";
 
 export async function handleYoutube(message, args, clients) {
@@ -31,8 +40,8 @@ export async function handleYoutube(message, args, clients) {
     await message.send({
       content: `${url}`,
     });
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error(error);
     await message.reply({
       ping: false,
       content: "Something went wrong during the processing",
