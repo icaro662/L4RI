@@ -29,7 +29,7 @@ export async function handleGrok(
     }
 
     const result = await clients.groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",
+      model: "openai/gpt-oss-120b",
       messages: [
         {
           role: "system",
