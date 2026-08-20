@@ -14,12 +14,13 @@ export async function fetchCopyPasta() {
             return pastaCache;
         }
 
-        const response = await axios.get("https://www.reddit.com/r/BrazilianCopypasta/new.json?limit=50", {
+        const response = await axios.get("https://www.reddit.com/r/BrazilianCopypasta/new.json?limit=25", {
         headers: {
-            "User-Agent": "Web:Fluxer-tool:1.0 (by /u/misha)",
-            "Accept": "application/json",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Connection": "keep-alive",
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Encoding': 'gzip, deflate, br, zstd',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Connection': 'keep-alive',
+            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:152.0) Gecko/20100101 Firefox/152.0' 
             },
         });
 
