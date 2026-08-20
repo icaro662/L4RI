@@ -115,7 +115,7 @@ client.on(Events.Ready, () => {
   console.log(`[L4RI] Logged in sucessfully!`);
 
   pastaFetchInterval();
-  gamesFetchInterval(client);
+  gamesFetchInterval();
 });
 
 /*
