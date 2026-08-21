@@ -2,10 +2,9 @@
 
 import './core/configs.js';
 import { Client, Events } from '@fluxerjs/core';
-import { REST } from "@discordjs/rest";
-import { WebSocketManager } from "@discordjs/ws";
+import { REST } from "@fluxerjs/rest";
+import { WebSocketManager } from "@fluxerjs/ws";
 import { Groq } from "groq-sdk";
-import { gamesFetchInterval } from "./commands/freeGames.js";
 import { pastaFetchInterval } from "./commands/fun.js";
 import { handleCommand } from './utils/cmdFilter.js';
 
@@ -47,7 +46,7 @@ Object.entries(clients).forEach(([name, key]) => {
 /*
 Initializes the REST instance for the bot.
 
-The REST instance is used for making API requests to the Fluxer API, such as sending messages or fetching data. It is created using the REST class from the @discordjs/rest package.
+The REST instance is used for making API requests to the Fluxer API, such as sending messages or fetching data. It is created using the REST class from the @fluxerjs/rest package.
 
 REST takes an object with the following properties:
 
@@ -67,7 +66,7 @@ const rest = new REST({
 /*
 Initializes the WebSocketManager instance for the bot.
 
-The WebSocketManager instance is used for managing the bot's WebSocket connection to the Discord API.
+The WebSocketManager instance is used for managing the bot's WebSocket connection to the Fluxer API.
 
 It takes an object with the following properties:
   

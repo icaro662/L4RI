@@ -70,7 +70,7 @@ async function handleInstagramUrl(message, url, loadingMessage) {
 
     await loadingMessage?.delete().catch(() => {});
 
-    console.log('Sending Instagram media to Discord:');
+    console.log('Sending Instagram media to Fluxer:');
     await message.send({
       ping: false,
       embeds: [{

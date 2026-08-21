@@ -12,7 +12,7 @@ async function getWikiArticle(message, args) {
             `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchTerm)}`,
             {
                 headers: {
-                    "User-Agent": "L4RI Discord Bot/1.0"
+                    "User-Agent": "L4RI Fluxer Bot/1.0"
                 }
             }
         );
@@ -46,7 +46,7 @@ async function getRandomWiki(message, args) {
         "https://en.wikipedia.org/api/rest_v1/page/random/summary",
         {
             headers: {
-            "User-Agent": "L4RI Discord Bot/1.0"
+            "User-Agent": "L4RI Fluxer Bot/1.0"
             }
         }
         );

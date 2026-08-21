@@ -138,7 +138,7 @@ export async function handleGrokAnalyze(
   const attachment = message.attachments.first();
 
   const validExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
-  const url = attachment.url.split('?')[0]; // strip query params Discord adds
+  const url = attachment.url.split('?')[0]; // strip query params Fluxer adds
   const isImage = validExtensions.some(ext => url.endsWith(ext));
 
   if (!attachment || !isImage) {

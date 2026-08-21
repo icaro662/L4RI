@@ -2,7 +2,7 @@
 Command for searching videos through youtube.
 
 Args:
-message: The message object from the Discord API.
+message: The message object from the Fluxer API.
 args: An array of arguments passed to the command (the user's search query).
 clients: An object containing the YouTube API key.
 */
