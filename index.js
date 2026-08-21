@@ -1,6 +1,6 @@
 /* This file is the main entry point for the Fluxer bot. Here lives most of the bot's configuration, aswell as a command splitter. */
 
-import './utils/envHelper.js';
+import './core/configs.js';
 import { Client, Events } from '@fluxerjs/core';
 import { REST } from "@discordjs/rest";
 import { WebSocketManager } from "@discordjs/ws";
