@@ -110,11 +110,21 @@ client.on('shardError', (err, shardId) => {
   console.error(`[Shard ${shardId} Error]`, err.message);
 });
 
-client.on(Events.Ready, () => {
-  console.log(`[L4RI] Logged in sucessfully!`);
+client.on(Events.Ready, async () => {
+    console.log(`[L4RI] Logged in sucessfully!`);
 
-  pastaFetchInterval();
-  gamesFetchInterval();
+    pastaFetchInterval();
+
+    if (process.env.TARGET_GAMESNOT_CHANNEL_ID) {
+        console.log("[L4RI] Free Games feature enabled.");
+
+        const { gamesFetchInterval } =
+            await import("./commands/freeGames.js");
+
+        await gamesFetchInterval();
+    } else {
+        console.log("[L4RI] Free Games feature disabled. Set TARGET_GAMESNOT_CHANNEL_ID in .env to enable.");
+    }
 });
 
 /*

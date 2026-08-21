@@ -6,7 +6,6 @@ let lastPastaFetch = 0;
 
 console.log("[L4RI] Fetching copypastas...");
 
-
 export async function fetchCopyPasta() {
     try {
         if (pastaCache.length > 0 || (Date.now() - lastPastaFetch) < 60000 * 60 * 24) { // 24 hours
@@ -39,7 +38,7 @@ export async function fetchCopyPasta() {
         pastaCache = result;
         return pastaCache;
     } catch (err) {
-        console.error("Error fetching copypasta:", err.response?.status);
+        console.error("[L4RI] Error fetching copypasta:", err.response?.status);
         return pastaCache;
     }
 }
@@ -76,7 +75,7 @@ export async function handleCopyPastaBR(message, args, clients) {
         ],
       });
     } catch (err) {
-    console.error("Error handling copypasta command:", err);
+    console.error("[L4RI] Error handling copypasta command:", err);
     await message.send({
         embeds: [{content: "Sorry, something went wrong while fetching the copypasta.",}]
       });

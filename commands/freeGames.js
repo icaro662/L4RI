@@ -7,8 +7,6 @@ let lastFreeGames = [];
 let itadCache = [];
 let lastFetch = 0;
 
-console.log("[L4RI] freeGames.js loaded, CHANNEL_ID:", CHANNEL_ID);
-
 export async function fetchFreeGames() {
   if (Date.now() - lastFetch < 12 * 60 * 60 * 1000) {
     console.log("[L4RI] Using cached games, count:", itadCache.length);
