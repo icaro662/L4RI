@@ -7,3 +7,12 @@ services:
     env_file:
       - ../config/.env
     restart: unless-stopped
+
+  bot-cabassos:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: L4RI-cabassos
+    env_file:
+      - ../config/.env.2
+    restart: unless-stopped
