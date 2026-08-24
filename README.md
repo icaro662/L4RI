@@ -1,4 +1,4 @@
-# ✦•┈๑⋅⋯ L4RI ⋯⋅๑┈•✦<br>˖ ִֶָ🐣་༘🐈‍⬛ ♡₊˚ 🐸・✨₊🦎✧ 🐺˖ ִֶָ
+# L4RI<br>
 
 ### L4RI is a small personal Fluxer bot i made for my friends server.<br>
 
