@@ -48,7 +48,7 @@ Instead of keeping main command algorithm and any side helper algorithm used, i 
 
 * Node.js 22 or newer and npm.
 * A Fluxer bot application and bot token.
-* API keys for the services you want to use: YouTube, Groq, IsThereAnyDeal, and Brave Search. (all of them have free plans)
+* API keys for the services: YouTube, Groq, IsThereAnyDeal, and Brave Search. (all of them have free plans)
 * Instagram credentials are required only for Instagram media embedding features.
 * Docker and Docker Compose are optional when running the bot in a container.
 
