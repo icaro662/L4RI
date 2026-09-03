@@ -1,4 +1,3 @@
-import { createTemporaryInstagramCookieFile } from './instagramSession.js';
 import {
   downloadInstagramMedia,
   getInstagramMetadata,
@@ -47,19 +46,14 @@ async function handleInstagramUrl(message, url, loadingMessage) {
   console.log('Handling Instagram URL:', url);
 
   try {
-    const cookieFilePath = await createTemporaryInstagramCookieFile({
-      username: process.env.INSTAGRAM_USERNAME,
-      password: process.env.INSTAGRAM_PASSWORD,
-    });
-
-    const metadata = await getInstagramMetadata(url, cookieFilePath);
+    const metadata = await getInstagramMetadata(url);
 
     if (!isInstagramVideoMetadata(metadata)) {
       await loadingMessage?.delete().catch(() => {});
       return;
     }
 
-    const buffer = await downloadInstagramMedia(url, cookieFilePath);
+    const buffer = await downloadInstagramMedia(url);
 
     const title = metadata.title || 'Instagram Post';
     const description = metadata.description || 'No description provided.';

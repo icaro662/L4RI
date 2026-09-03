@@ -18,7 +18,6 @@ Additionaly, it uses such libraries for it features:
 * `@napi-rs/canvas`: Image rendering and caption generation.
 * `axios`: HTTP requests to external APIs and services.
 * `groq-sdk`: Connecting to Groq for AI features.
-* `playwright`: Browser automation for Instagram sessions.
 * `yt-dlp-exec`: Downloading media from Instagram posts.
 
 and some APIs and external services:
@@ -49,7 +48,6 @@ Instead of keeping main command algorithm and any side helper algorithm used, i 
 * Node.js 22 or newer and npm.
 * A Fluxer bot application and bot token.
 * API keys for the services: YouTube, Groq, IsThereAnyDeal, and Brave Search. (all of them have free plans)
-* Instagram credentials are required only for Instagram media embedding features.
 * Docker and Docker Compose are optional when running the bot in a container.
 
 ## Setup
@@ -77,11 +75,7 @@ Instead of keeping main command algorithm and any side helper algorithm used, i 
   CLIENT_ID=your_bot_client_id
   TARGET_GUILD_ID=your_fluxer_server_id
   TARGET_GAMESNOT_CHANNEL_ID=your_free_games_channel_id (OPTIONAL)
-  INSTAGRAM_USERNAME=your_instagram_username
-  INSTAGRAM_PASSWORD=your_instagram_password
   ```
-
-> **Note:** Instagram login credentials are needed for Instagram media embedding. 
 
 4. Start the bot:
 

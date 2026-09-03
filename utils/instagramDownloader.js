@@ -1,6 +1,4 @@
-import fs from 'node:fs/promises';
 import youtubedl from 'yt-dlp-exec';
-import { cleanupTemporaryCookieFile } from './instagramSession.js';
 
 const DOWNLOAD_HEADERS = [
   'User-Agent: Mozilla/5.0',
@@ -16,42 +14,12 @@ function isMp4Payload(buffer) {
   return buffer.toString('ascii', 4, 8) === 'ftyp';
 }
 
-async function getCookieHeader(cookieFilePath) {
-  const content = await fs.readFile(cookieFilePath, 'utf8');
-  const cookieEntries = [];
-
-  for (const line of content.split(/\r?\n/)) {
-    const trimmed = line.trim();
-
-    if (!trimmed || trimmed.startsWith('#')) {
-      continue;
-    }
-
-    const columns = trimmed.split('\t');
-
-    if (columns.length < 7) {
-      continue;
-    }
-
-    const [, , , , , name, value] = columns;
-
-    if (!name || !value) {
-      continue;
-    }
-
-    cookieEntries.push(`${name}=${value}`);
-  }
-
-  return cookieEntries.join('; ');
-}
-
-export async function getInstagramMediaUrl(url, cookieFilePath) {
+export async function getInstagramMediaUrl(url) {
   const { stdout } = await youtubedl.exec(
     url,
     {
       format: 'best[ext=mp4]/best',
       getUrl: true,
-      cookies: cookieFilePath,
       noWarnings: true,
       noCheckCertificates: true,
       addHeader: DOWNLOAD_HEADERS,
@@ -69,10 +37,9 @@ export async function getInstagramMediaUrl(url, cookieFilePath) {
   return stdout.trim();
 }
 
-export async function getInstagramMetadata(url, cookieFilePath) {
+export async function getInstagramMetadata(url) {
   const metadata = await youtubedl(url, {
     dumpSingleJson: true,
-    cookies: cookieFilePath,
     noWarnings: true,
     noCheckCertificates: true,
     addHeader: DOWNLOAD_HEADERS,
@@ -103,15 +70,13 @@ export function isInstagramVideoMetadata(metadata = {}) {
   return false;
 }
 
-export async function downloadInstagramMediaToMemory(url, cookieFilePath) {
-  const directUrl = await getInstagramMediaUrl(url, cookieFilePath);
-  const cookieHeader = await getCookieHeader(cookieFilePath);
+export async function downloadInstagramMediaToMemory(url) {
+  const directUrl = await getInstagramMediaUrl(url);
 
   const response = await fetch(directUrl, {
     headers: {
       'User-Agent': 'Mozilla/5.0',
       Referer: 'https://www.instagram.com/',
-      Cookie: cookieHeader,
     },
   });
 
@@ -128,11 +93,7 @@ export async function downloadInstagramMediaToMemory(url, cookieFilePath) {
   return buffer;
 }
 
-export async function downloadInstagramMedia(url, cookieFilePath) {
-  console.log('Downloading Instagram media:', url);
-  try {
-    return await downloadInstagramMediaToMemory(url, cookieFilePath);
-  } finally {
-    await cleanupTemporaryCookieFile(cookieFilePath);
-  }
+export async function downloadInstagramMedia(url) {
+  log('InstagramDownloader', 'Downloading Instagram media:', url);
+  return downloadInstagramMediaToMemory(url);
 }
