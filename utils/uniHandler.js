@@ -8,8 +8,7 @@ import { handleGrokAnalyze } from '../commands/grok.js';
 import { handleSearch } from '../commands/search.js';
 import { handleImgSearch } from '../commands/imgSearch.js';
 import { handleFreeCheck } from '../commands/freeGames.js';
-import { handleYoutube } from '../commands/youtube.js';
-import { handleCopyPastaBR } from '../commands/fun.js';
+import { handleYoutube } from '../commands/youtube.js'
 import { handleAvatar } from '../commands/avatar.js';
 import { handleCanvas } from '../commands/canvas.js';
 import { handleImageGen } from '../commands/imgGen.js';
@@ -23,7 +22,6 @@ const uniHandler = {
   handleImgSearch,
   handleFreeCheck,
   handleYoutube,
-  handleCopyPastaBR,
   handleAvatar,
   handleCanvas,
   handleImageGen,

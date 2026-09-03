@@ -5,7 +5,6 @@ import { Client, Events } from '@fluxerjs/core';
 import { REST } from "@fluxerjs/rest";
 import { WebSocketManager } from "@fluxerjs/ws";
 import { Groq } from "groq-sdk";
-import { pastaFetchInterval } from "./commands/fun.js";
 import { handleCommand } from './utils/cmdFilter.js';
 import { error as logError, log } from './utils/logger.js';
 import consoleStamp from 'console-stamp';
@@ -117,8 +116,6 @@ client.on('shardError', (err, shardId) => {
 });
 
 client.on(Events.Ready, async () => {
-
-    pastaFetchInterval();
     log('Index', 'Logged in sucessfully!');
 
     if (process.env.TARGET_GAMESNOT_CHANNEL_ID) {
