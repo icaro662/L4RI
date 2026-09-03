@@ -7,6 +7,12 @@ import { WebSocketManager } from "@fluxerjs/ws";
 import { Groq } from "groq-sdk";
 import { pastaFetchInterval } from "./commands/fun.js";
 import { handleCommand } from './utils/cmdFilter.js';
+import { error as logError, log } from './utils/logger.js';
+import consoleStamp from 'console-stamp';
+
+consoleStamp(console, {
+  format: ':date(HH:MM)',
+});
 
 
 const userConversations = new Map();
@@ -97,33 +103,33 @@ client.on(Events.MessageCreate, async (message) => {
   try {
     await handleCommand(message, userConversations, clients, prefix, mention);
   } catch (error) {
-    console.error("An unexpected error occurred:", error);
+    logError('Index', 'An unexpected error occurred:', error);
   }
 });
 
 
 client.on('error', (err) => {
-  console.error('[WebSocket Error]', err.message);
+  logError('Index', 'WebSocket Error:', err.message);
 });
 
 client.on('shardError', (err, shardId) => {
-  console.error(`[Shard ${shardId} Error]`, err.message);
+  logError('Index', `Shard ${shardId} Error:`, err.message);
 });
 
 client.on(Events.Ready, async () => {
-    console.log(`[L4RI] Logged in sucessfully!`);
 
     pastaFetchInterval();
+    log('Index', 'Logged in sucessfully!');
 
     if (process.env.TARGET_GAMESNOT_CHANNEL_ID) {
-        console.log("[L4RI] Free Games feature enabled.");
+        log('Index', 'Free Games feature enabled.');
 
         const { gamesFetchInterval } =
             await import("./commands/freeGames.js");
 
         await gamesFetchInterval();
     } else {
-        console.log("[L4RI] Free Games feature disabled. Set TARGET_GAMESNOT_CHANNEL_ID in .env to enable.");
+        log('Index', 'Free Games feature disabled.\n(Set TARGET_GAMESNOT_CHANNEL_ID in .env to enable.)');
     }
 });
 

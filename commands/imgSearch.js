@@ -1,3 +1,5 @@
+import { error as logError } from '../utils/logger.js';
+
 import 'dotenv/config';
 import axios from 'axios';
 
@@ -105,7 +107,7 @@ export async function handleImgSearch(message, args, clients) {
     });
 
   } catch (error) {
-    console.error(error);
+    logError('ImgSearch', 'Image search error:', error);
 
     if (loadingMessage) {
       await loadingMessage.edit({

@@ -8,6 +8,7 @@ clients: An object containing the YouTube API key.
 */
 
 import axios from "axios";
+import { error as logError } from '../utils/logger.js';
 
 export async function handleYoutube(message, args, clients) {
   
@@ -41,7 +42,7 @@ export async function handleYoutube(message, args, clients) {
       content: `${url}`,
     });
   } catch (error) {
-    console.error(error);
+    logError('Youtube', 'YouTube search error:', error);
     await message.reply({
       ping: false,
       content: "Something went wrong during the processing",

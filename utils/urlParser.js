@@ -3,6 +3,7 @@ import {
   getInstagramMetadata,
   isInstagramVideoMetadata,
 } from './instagramDownloader.js';
+import { error as logError, log } from './logger.js';
 
 function extractUrls(text) {
   return text.match(/https?:\/\/\S+/g) || [];
@@ -19,15 +20,16 @@ function isLikelyInstagramVideoUrl(url) {
 
     const firstSegment = segments[0].toLowerCase();
 
-    return ['reel', 'tv'].includes(firstSegment);
+    return ['reels','reel', 'tv'].includes(firstSegment);
   } catch {
     return false;
   }
 }
 
 function getEmbedVariants(url) {
-  if (url.includes('instagram.com') || url.includes('instagram/reel')) {
-    return [url];
+
+  if (url.includes('instagram.com') || url.includes('instagram/reels') || url.includes('instagram/reel') || url.includes('instagram/tv')) {
+    return [url]
   }
 
   if (url.includes('twitter.com') || url.includes('//x.com')) {
@@ -40,10 +42,10 @@ function getEmbedVariants(url) {
   return [url];
 }
 
-const ERROR_MESSAGE_TIMEOUT_MS = 5000;
+const ERROR_MESSAGE_TIMEOUT_MS = 5000; // 5 seconds
 
 async function handleInstagramUrl(message, url, loadingMessage) {
-  console.log('Handling Instagram URL:', url);
+  log('UrlParser', 'Handling Instagram URL:', url);
 
   try {
     const metadata = await getInstagramMetadata(url);
@@ -64,7 +66,7 @@ async function handleInstagramUrl(message, url, loadingMessage) {
 
     await loadingMessage?.delete().catch(() => {});
 
-    console.log('Sending Instagram media to Fluxer:');
+    log('UrlParser', 'Sending Instagram media to Fluxer...');
     await message.send({
       ping: false,
       embeds: [{
@@ -85,14 +87,14 @@ async function handleInstagramUrl(message, url, loadingMessage) {
       }],
     });
 
-    console.log('Instagram media sent successfully.');
+    log('UrlParser', 'Instagram media sent successfully.');
   } catch (error) {
-    console.error('Instagram download failed:', error);
+    logError('UrlParser', 'Instagram download failed:', error);
 
     await loadingMessage?.delete().catch(() => {});
 
     const errorMessage = await message.send({
-      content: 'something went wrong while trying to download the Instagram media. Please try again later.',
+      content: 'Something went wrong while trying to download the Instagram media. Please try again later.',
     });
 
     setTimeout(() => {
@@ -108,7 +110,7 @@ export async function urlParser(message) {
 
   const urls = extractUrls(message.content);
 
-  console.log('Extracted URLs:', urls);
+  log('UrlParser', 'Extracted URLs:', urls);
 
   const supported = urls.filter(
     (url) =>
@@ -117,19 +119,19 @@ export async function urlParser(message) {
       url.includes('//x.com'),
   );
 
-  console.log('Supported:', supported);
+  log('UrlParser', 'Supported:', supported);
 
   if (supported.length === 0) return;
 
   await message.delete(message.channel_id, message.id).catch(() => {});
 
   for (const url of supported) {
-    console.log('Processing URL:', url);
+    log('UrlParser', 'Processing URL:', url);
     const variants = getEmbedVariants(url);
 
-    if (url.includes('instagram.com') || url.includes('instagram/reel')) {
+    if (url.includes('instagram.com') || url.includes('instagram/reels') || url.includes('instagram/reel') || url.includes('instagram/tv')) {
       if (!isLikelyInstagramVideoUrl(url)) {
-        console.log('Skipping non-video Instagram URL at parser entrypoint:', url);
+        log('UrlParser', 'Skipping non-video Instagram URL at parser entrypoint:', url);
         continue;
       }
 

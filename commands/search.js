@@ -1,3 +1,5 @@
+import { error as logError } from '../utils/logger.js';
+
 import axios from 'axios';
 
 function cleanDescription(text) {
@@ -67,7 +69,7 @@ export async function handleSearch(message, args, clients) {
     });
 
   } catch (error) {
-    console.error(error);
+    logError('Search', 'Search error:', error);
     const isAuthError = error.response?.status === 401;
     const isRateLimit = error.response?.status === 429;
 

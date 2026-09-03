@@ -1,4 +1,5 @@
 const MAX_HISTORY = 5;
+import { error as logError } from '../utils/logger.js';
 
 export async function handleGrok(
   message,
@@ -110,7 +111,7 @@ export async function handleGrok(
       });
     }
   } catch (error) {
-    console.error("Error:", error);
+    logError('Grok', 'Error:', error);
 
     await message.reply({
       ping: false,
@@ -203,7 +204,7 @@ export async function handleGrokAnalyze(
       }]
     });
   } catch (error) {
-    console.error("Error:", error);
+    logError('Grok', 'Error:', error);
 
     await message.reply({
       ping: false,

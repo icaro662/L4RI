@@ -1,4 +1,5 @@
 import {createCanvas, loadImage, GlobalFonts} from "@napi-rs/canvas";
+import { error as logError } from '../utils/logger.js';
 
 GlobalFonts.registerFromPath("utils/impact.ttf","Impact");
 
@@ -236,7 +237,7 @@ async function Caption(message, args) {
     });
 
   } catch (error) {
-    console.error(error);
+    logError('Canvas', 'Canvas command error:', error);
 
     if (loadingMessage) {
       await loadingMessage

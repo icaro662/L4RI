@@ -1,4 +1,4 @@
-async function getAvatar(message, args) {
+async function getAvatar(message) {
     const user = message.mentions?.[0] || message.author;
     
     const avatarUrl = user.displayAvatarURL({ size: 256 });
@@ -14,6 +14,6 @@ async function getAvatar(message, args) {
     });
 }
 
-export async function handleAvatar(message, args) {
-    await getAvatar(message, args);
+export async function handleAvatar(message) {
+    await getAvatar(message);
 }

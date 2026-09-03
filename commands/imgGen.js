@@ -1,3 +1,5 @@
+import { error as logError } from '../utils/logger.js';
+
 import axios from 'axios';
 
 export async function handleImageGen(message, args) {
@@ -31,7 +33,7 @@ export async function handleImageGen(message, args) {
     });
 
   } catch (error) {
-    console.error(error);
+    logError('ImgGen', 'Image generation error:', error);
     await message.reply({
       ping: false,
       embeds: [{

@@ -1,4 +1,5 @@
 import youtubedl from 'yt-dlp-exec';
+import { log } from './logger.js';
 
 const DOWNLOAD_HEADERS = [
   'User-Agent: Mozilla/5.0',
@@ -81,13 +82,13 @@ export async function downloadInstagramMediaToMemory(url) {
   });
 
   if (!response.ok) {
-    throw new Error(`Direct media fetch failed with status ${response.status}`);
+    throw new Error(`Instagram media fetch failed: ${response.status} ${response.statusText}`);
   }
 
   const buffer = Buffer.from(await response.arrayBuffer());
 
   if (!isMp4Payload(buffer)) {
-    throw new Error('Downloaded Instagram payload is not a valid MP4 stream.');
+    throw new Error(`Instagram media fetch failed: Invalid MP4 payload. Buffer length: ${buffer.length}`);
   }
 
   return buffer;

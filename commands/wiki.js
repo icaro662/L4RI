@@ -4,6 +4,7 @@ Search by term or get a random article.
 */
 import axios from "axios";
 import { client } from "../index.js";
+import { error as logError } from '../utils/logger.js';
 
 async function getWikiArticle(message, args) {
     try {
@@ -35,7 +36,7 @@ async function getWikiArticle(message, args) {
             ]
         });
     } catch (error) {
-        console.error("Some error occurred:", error);
+        logError('Wiki', 'Some error occurred:', error);
         await message.reply("Couldn't find a wikipedia article for that search term.");
     }
 }
@@ -64,7 +65,7 @@ async function getRandomWiki(message, args) {
             ]
         });
     } catch (error) {
-        console.error("Some error occurred:", error);
+        logError('Wiki', 'Some error occurred:', error);
         await message.reply("Couldn't find a random wikipedia article at the moment.");
     }
 }

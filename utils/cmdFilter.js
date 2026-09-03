@@ -1,5 +1,6 @@
 import uniHandler from "./uniHandler.js";
 import { urlParser } from "./urlParser.js";
+import { error as logError } from './logger.js';
 
 const DEFAULT_PREFIX = "!";
 const DEFAULT_MENTION = "<@1483928797831864671>";
@@ -35,7 +36,7 @@ export async function handleCommand(
           await uniHandler.handleGrok(message, [question], userConversations, clients);
         }
       } catch (error) {
-        console.error("An unexpected error occurred:", error);
+        logError('CmdFilter', 'An unexpected error occurred:', error);
       }
     } else if (message.content.startsWith(prefix)) {
       const args = message.content.slice(prefix.length).trim().split(" ");
@@ -83,7 +84,6 @@ export async function handleCommand(
                   !img [termo] - Procura por uma imagem na web\n
                   !yt ou !youtube [termo] - Procura por vídeos no YouTube\n
                   !check ou !checkfree - Verifica jogos grátis (Steam, Epic games)\n
-                  !copypasta - Procura por uma copypasta aleatória em r/BrazilianCopypasta\n
                   !wiki [termo] - Procura por um artigo na Wikipedia\n
                   !randompedia - Retorna um artigo aleatório da Wikipedia\n
                   
@@ -99,7 +99,7 @@ export async function handleCommand(
           });
         }
       } catch (error) {
-        console.error("Command error:", error);
+        logError('CmdFilter', 'Command error:', error);
       }
     } else if (message.content === "ping") {
       await message.reply({
@@ -113,6 +113,6 @@ export async function handleCommand(
       await urlParser(message);
     }
   } catch (err) {
-    console.error("Fatal message error:", err);
+    logError('CmdFilter', 'Fatal message error:', err);
   }
 }

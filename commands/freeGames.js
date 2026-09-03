@@ -1,5 +1,6 @@
 import axios from "axios";
 import { client } from "../index.js";
+import { error, log } from '../utils/logger.js';
 
 const CHANNEL_ID = process.env.TARGET_GAMESNOT_CHANNEL_ID;
 
@@ -9,7 +10,7 @@ let lastFetch = 0;
 
 export async function fetchFreeGames() {
   if (Date.now() - lastFetch < 12 * 60 * 60 * 1000) {
-    console.log("[L4RI] Using cached games, count:", itadCache.length);
+    log('FreeGames', 'Using cached games, count:', itadCache.length);
     return itadCache;
   }
 
@@ -23,7 +24,7 @@ export async function fetchFreeGames() {
       }
     });
 
-    console.log("[L4RI] ITAD fetch status:", res.status);
+    log('FreeGames', 'ITAD fetch status:', res.status);
 
     if (!res.data?.list) {
       console.warn("[L4RI] Invalid ITAD response");
@@ -41,14 +42,14 @@ export async function fetchFreeGames() {
         expiry: game.deal.expiry,
       }));
 
-    console.log("[L4RI] Free games fetched:", games.length);
+    log('FreeGames', 'Free games fetched:', games.length);
 
     itadCache = games;
     lastFetch = Date.now();
 
     return itadCache;
   } catch (err) {
-    console.error("[L4RI] ITAD error:", err.response?.status, err.response?.data);
+    error('FreeGames', 'ITAD error:', err.response?.status, err.response?.data);
     return itadCache;
   }
 }
@@ -66,7 +67,7 @@ export async function compareCache() {
   const channel = client.channels.get(CHANNEL_ID);
 
   if (!channel) {
-    console.error("[L4RI] Channel not found:", CHANNEL_ID);
+    error('FreeGames', 'Channel not found:', CHANNEL_ID);
     return;
   }
 
@@ -90,7 +91,7 @@ export async function compareCache() {
     ? unique
     : unique.filter((g) => !lastFreeGames.some((prev) => prev.id === g.id));
 
-  console.log("[L4RI] Games to notify:", toNotify.length);
+  log('FreeGames', 'Games to notify:', toNotify.length);
 
   if (toNotify.length > 0) {
     const description = toNotify
@@ -136,6 +137,6 @@ export async function gamesFetchInterval() {
   }
 
   setInterval(async () => {
-    compareCache().catch((err) => console.error("Interval error:", err));
+    compareCache().catch((err) => error('FreeGames', 'Interval error:', err));
   }, 1000 * 60 * 60 * 12);
 }
