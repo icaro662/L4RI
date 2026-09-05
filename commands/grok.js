@@ -76,7 +76,7 @@ export async function handleGrok(
         },
         ...conversationHistory,
       ],
-      temperature: 0.9,
+      temperature: 1,
       max_tokens: 1024,
     });
 
