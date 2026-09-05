@@ -13,9 +13,9 @@ jobs:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SERVER_IP }} // Replace with your server IP
-          username: ${{ secrets.SERVER_USER }} // Replace with your server username
-          key: ${{ secrets.SSH_PRIVATE_KEY }} // Replace with your SSH private key
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/projects/L4RI/docker
             git pull
