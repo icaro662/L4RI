@@ -77,10 +77,8 @@ export async function handleGrok(
         ...conversationHistory,
       ],
       temperature: 1,
-      max_tokens: 1024,
+      max_tokens: 4096,
     });
-
-    const response = result.choices[0].message.content;
 
     conversationHistory.push({
       role: "assistant",
@@ -92,7 +90,8 @@ export async function handleGrok(
     if (response.length > 2000) {
       const chunks = [];
       for (let i = 0; i < response.length; i += 2000) {
-        chunks.push(response.substring(i, i + 2000));
+        const end = Math.min(i + 2000, response.length);
+        chunks.push(response.substring(i, end));
       }
 
       for (const chunk of chunks) {
@@ -185,7 +184,7 @@ export async function handleGrokAnalyze(
           ],
         },
       ],
-      max_tokens: 1024,
+      max_tokens: 4096,
     });
 
     const result = response.choices[0].message.content;
