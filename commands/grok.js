@@ -80,6 +80,8 @@ export async function handleGrok(
       max_tokens: 4096,
     });
 
+    const response = result.choices[0].message.content;
+
     conversationHistory.push({
       role: "assistant",
       content: response,
