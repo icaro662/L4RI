@@ -9,22 +9,55 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      packages: write
+
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/icaro662/l4ri:latest
+            ghcr.io/icaro662/l4ri:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          GHCR_USERNAME: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IMAGE_TAG: ${{ github.sha }}
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: GHCR_USERNAME,GHCR_TOKEN,IMAGE_TAG
           script: |
-            cd ~/projects/L4RI/docker
-            git pull
-              echo "FLUXER_BOT_TOKEN=${{ secrets.FLUXER_BOT_TOKEN }}" > ~/projects/L4RI/config/.env
-              echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> ~/projects/L4RI/config/.env
-              echo "YOUTUBE_API_KEY=${{ secrets.YOUTUBE_API_KEY }}" >> ~/projects/L4RI/config/.env
-              echo "ITAD_API_KEY=${{ secrets.ITAD_API_KEY }}" >> ~/projects/L4RI/config/.env
-              echo "BRAVE_API_KEY=${{ secrets.BRAVE_API_KEY }}" >> ~/projects/L4RI/config/.env
-              echo "CLIENT_ID=${{ vars.CLIENT_ID }}" >> ~/projects/L4RI/config/.env
-              echo "TARGET_GAMESNOT_CHANNEL_ID=${{ vars.TARGET_GAMESNOT_CHANNEL_ID }}" >> ~/projects/L4RI/config/.env
-              echo "TARGET_GUILD_ID=${{ vars.TARGET_GUILD_ID }}" >> ~/projects/L4RI/config/.env
-            docker compose up -d --build bot
+            cd ~/projects/L4RI
+            git pull --ff-only
+            echo "FLUXER_BOT_TOKEN=${{ secrets.FLUXER_BOT_TOKEN }}" > config/.env
+            echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> config/.env
+            echo "YOUTUBE_API_KEY=${{ secrets.YOUTUBE_API_KEY }}" >> config/.env
+            echo "ITAD_API_KEY=${{ secrets.ITAD_API_KEY }}" >> config/.env
+            echo "BRAVE_API_KEY=${{ secrets.BRAVE_API_KEY }}" >> config/.env
+            echo "CLIENT_ID=${{ vars.CLIENT_ID }}" >> config/.env
+            echo "TARGET_GAMESNOT_CHANNEL_ID=${{ vars.TARGET_GAMESNOT_CHANNEL_ID }}" >> config/.env
+            echo "TARGET_GUILD_ID=${{ vars.TARGET_GUILD_ID }}" >> config/.env
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+            docker compose -f docker/docker-compose.yml pull bot
+            docker compose -f docker/docker-compose.yml up -d --no-build bot

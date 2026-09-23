@@ -1,8 +1,6 @@
 services:
   bot:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
+    image: ghcr.io/icaro662/l4ri:${IMAGE_TAG:-latest}
     container_name: L4RI
     env_file:
       - ../config/.env
