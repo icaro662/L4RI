@@ -1,15 +1,36 @@
 const MAX_HISTORY = 5;
 import { error as logError } from '../utils/logger.js';
 
+/**
+ * Handles conversational AI interactions using the Groq API (openai/gpt-oss-120b)
+ * in the Nagatoro persona with multi-turn conversation memory.
+ *
+ * Flow:
+ * 1. Input Parsing: Extracts author ID from `message.author.id` and reconstructs prompt from `args`.
+ * 2. Validation: If `userText` is empty, replies with usage guidelines and returns early.
+ * 3. History Retrieval & Pruning: Retrieves previous messages for the user from `userConversation_ref_ref`, appends new user message, and caps history at `MAX_HISTORY` turns.
+ * 4. API Request: Dispatches a chat completion call to Groq with persona system instructions and current message history.
+ * 5. State Persistence: Records assistant response back into the conversation history and persists it in the map.
+ * 6. Message Dispatch: Checks if response exceeds 2000 characters; if so, splits response into 2000-char chunks and sends with 500ms delay; otherwise sends a single reply.
+ * 7. Error Handling: Catches any exceptions, logs via `logError`, and notifies the user with a friendly error message.
+ *
+ * @param {Object} message - Fluxer message object.
+ * @param {string[]} args - Command arguments forming the user's prompt.
+ * @param {Map<string, Array<{role: string, content: string}>>} userConversation_ref_ref - In-memory map storing conversation histories by user ID.
+ * @param {Object} clients - API clients container object containing `groq` client instance.
+ * @returns {Promise<void>}
+ */
 export async function handleGrok(
   message,
   args,
   userConversation_ref_ref,
   clients,
 ) {
+  // Step 1: Extract user ID and reconstruct prompt from arguments.
   const userId = message.author.id;
   const userText = args.join(" ");
 
+  // Step 2: Validate that prompt text is present.
   if (!userText) {
     return message.reply ({
       ping: false,
@@ -18,6 +39,7 @@ export async function handleGrok(
   }
 
   try {
+    // Step 3: Retrieve and truncate user conversation history to MAX_HISTORY turns.
     let conversationHistory = userConversation_ref_ref.get(userId) || [];
 
     conversationHistory.push({
@@ -29,6 +51,7 @@ export async function handleGrok(
       conversationHistory = conversationHistory.slice(-MAX_HISTORY);
     }
 
+    // Step 4: Dispatch chat completion request to Groq API.
     const result = await clients.groq.chat.completions.create({
       model: "openai/gpt-oss-120b",
       messages: [
@@ -80,6 +103,7 @@ export async function handleGrok(
       max_tokens: 4096,
     });
 
+    // Step 5: Save assistant response to conversation history map.
     const response = result.choices[0].message.content;
 
     conversationHistory.push({
@@ -89,6 +113,7 @@ export async function handleGrok(
 
     userConversation_ref_ref.set(userId, conversationHistory);
 
+    // Step 6: Chunk and send response if exceeding 2000 characters, or send single reply.
     if (response.length > 2000) {
       const chunks = [];
       for (let i = 0; i < response.length; i += 2000) {
@@ -112,6 +137,7 @@ export async function handleGrok(
       });
     }
   } catch (error) {
+    // Step 7: Catch and log unexpected runtime errors.
     logError('Grok', 'Error:', error);
 
     await message.reply({
@@ -122,15 +148,37 @@ export async function handleGrok(
 }
 
 
+/**
+ * Performs multimodal vision analysis using Groq's vision model (meta-llama/llama-4-scout-17b-16e-instruct)
+ * on an attached image with optional user inquiry.
+ *
+ * Flow:
+ * 1. Input Parsing: Extracts author ID, user query (defaulting to a Portuguese fallback), and attachments.
+ * 2. Attachment Validation: Checks if an attachment is present and whether its URL has a supported image extension (.png, .jpg, .jpeg, .gif, .webp).
+ * 3. Image Download: Fetches image binary buffer via Axios and encodes into base64 format.
+ * 4. History Management: Retrieves conversation history, adds current query/filename, and trims to last 5 entries.
+ * 5. Vision API Request: Sends completion request to Groq vision model with the image base64 data URL and text prompt.
+ * 6. History Update: Appends vision model's response to history and stores in conversation map.
+ * 7. Result Presentation: Sends an embed reply containing the generated analysis text.
+ * 8. Error Handling: Catches and logs any network or API failures, informing the user.
+ *
+ * @param {Object} message - Fluxer message object containing image attachment and reply methods.
+ * @param {string[]} args - Command arguments forming custom questions about the image.
+ * @param {Map<string, Array<Object>>} userConversation_ref - In-memory map storing conversation histories by user ID.
+ * @param {Object} clients - API clients container object containing `groq` client instance.
+ * @returns {Promise<void>}
+ */
 export async function handleGrokAnalyze(
   message,
   args,
   userConversation_ref,
   clients,
 ) {
+  // Step 1: Extract user context, prompt, and attachment reference.
   const userId = message.author.id;
   const userQuestion = args.join(" ") || "Descreva esta imagem com detalhe";
 
+  // Step 2: Validate attachment presence.
   if (!message.attachments || message.attachments.length === 0) {
     return message.reply({
       content: "Please attach an image to analyze",
@@ -139,6 +187,7 @@ export async function handleGrokAnalyze(
 
   const attachment = message.attachments.first();
 
+  // Step 3: Validate image file extension.
   const validExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
   const url = attachment.url.split('?')[0]; // strip query params Fluxer adds
   const isImage = validExtensions.some(ext => url.endsWith(ext));
@@ -150,6 +199,7 @@ export async function handleGrokAnalyze(
     } 
 
   try {
+    // Step 4: Download image binary buffer and convert to base64.
     const axios = await import("axios");
 
     const imageResponse = await axios.default.get(attachment.url, {
@@ -158,6 +208,7 @@ export async function handleGrokAnalyze(
 
     const base64 = Buffer.from(imageResponse.data).toString("base64");
 
+    // Step 5: Retrieve and truncate user conversation history.
     let conversationHistory = userConversation_ref.get(userId) || [];
 
     conversationHistory.push({
@@ -169,6 +220,7 @@ export async function handleGrokAnalyze(
       conversationHistory = conversationHistory.slice(-5);
     }
 
+    // Step 6: Submit multimodal completion request to Groq vision model.
     const response = await clients.groq.chat.completions.create({
       model: "meta-llama/llama-4-scout-17b-16e-instruct",
       messages: [
@@ -189,6 +241,7 @@ export async function handleGrokAnalyze(
       max_tokens: 4096,
     });
 
+    // Step 7: Record assistant response in conversation history.
     const result = response.choices[0].message.content;
 
     conversationHistory.push({
@@ -198,6 +251,7 @@ export async function handleGrokAnalyze(
 
     userConversation_ref.set(userId, conversationHistory);
 
+    // Step 8: Send analysis embed reply to user.
     await message.reply({
       ping: false,
       embeds: [{
@@ -205,6 +259,7 @@ export async function handleGrokAnalyze(
       }]
     });
   } catch (error) {
+    // Step 9: Catch and log unexpected runtime errors.
     logError('Grok', 'Error:', error);
 
     await message.reply({
