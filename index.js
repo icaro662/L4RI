@@ -108,7 +108,7 @@ client.on(Events.MessageCreate, async (message) => {
 
 gateway.on('error', (err) => {
   logError('Index', 'Gateway WebSocket Error:', err.message);
-});`
+});
 
 client.on('error', (err) => {
   logError('Index', 'WebSocket Error:', err.message);
