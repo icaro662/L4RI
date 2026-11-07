@@ -238,7 +238,8 @@ export async function handleGrokAnalyze(
           ],
         },
       ],
-      max_tokens: 2048,
+      max_tokens: 1024,
+      reasoning_effort: "low"
     });
 
     // Step 7: Record assistant response in conversation history.
