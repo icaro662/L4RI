@@ -25,7 +25,7 @@ if (!token) {
 }
 
 /*
-Initializes objected referencing all the API keys used in the bot. 
+Initializes objected referencing all the API keys used in the bot.
 If any of the keys are not found, a warning is logged to the console.
 */
 export const clients = {
@@ -35,11 +35,11 @@ export const clients = {
   braveKey: process.env.BRAVE_API_KEY,
 };
 
-/* 
-Converts the object entries into a array of pairs of name and keys. 
+/*
+Converts the object entries into a array of pairs of name and keys.
 (i.e: { groq: "key1", youtubeKey: "key2" } => [["groq", "key1"], ["youtubeKey", "key2"]])
 
-then .forEach iterates each element and checks if the key is not found. Logs on console if not. 
+then .forEach iterates each element and checks if the key is not found. Logs on console if not.
 */
 
 Object.entries(clients).forEach(([name, key]) => {
@@ -61,8 +61,8 @@ version: The API version to use for requests.
 .setToken sets the required bot token for the REST instance to authenticate requests to the Fluxer API.
 */
 
-const rest = new REST({ 
-  api: "https://api.fluxer.app", 
+const rest = new REST({
+  api: "https://api.fluxer.app",
   version: "1" })
   .setToken(
   token,
@@ -74,13 +74,13 @@ Initializes the WebSocketManager instance for the bot.
 The WebSocketManager instance is used for managing the bot's WebSocket connection to the Fluxer API.
 
 It takes an object with the following properties:
-  
+
 intents: An array of intents that the bot will listen to. In this case, it listens
 for GuildMessages and MessageContent events.
 rest: The REST instance created earlier, which is used for making API requests.
 token: The bot token used for authenticating the WebSocket connection.
 version: The API version to use for the WebSocket connection.
-*/ 
+*/
 
 const gateway = new WebSocketManager({
   intents: ["GuildMessages", "MessageContent"],
@@ -106,6 +106,9 @@ client.on(Events.MessageCreate, async (message) => {
   }
 });
 
+gateway.on('error', (err) => {
+  logError('Index', 'Gateway WebSocket Error:', err.message);
+});`
 
 client.on('error', (err) => {
   logError('Index', 'WebSocket Error:', err.message);
