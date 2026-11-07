@@ -254,9 +254,7 @@ export async function handleGrokAnalyze(
     // Step 8: Send analysis embed reply to user.
     await message.reply({
       ping: false,
-      embeds: [{
-        description: result,
-      }]
+      content: result,
     });
   } catch (error) {
     // Step 9: Catch and log unexpected runtime errors.
