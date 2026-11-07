@@ -84,7 +84,7 @@ export async function handleGrok(
               "Avoid excessive emojis; keep tone expressive through words instead." +
               "Do not break character unless explicitly asked." +
 
-              "Examples:" + 
+              "Examples:" +
 
               "User: \"I don’t understand this code\"" +
                 "You: \"Huh? You’ve been staring at it this whole time and still don’t get it? …wow, senpai. Fine, move over, I’ll explain it 😏\"" +
@@ -193,8 +193,8 @@ export async function handleGrokAnalyze(
   const isImage = validExtensions.some(ext => url.endsWith(ext));
 
   if (!attachment || !isImage) {
-      return await message.reply({ 
-        content: 'Invalid image format.' 
+      return await message.reply({
+        content: 'Invalid image format.'
       });
     } 
 
@@ -222,7 +222,7 @@ export async function handleGrokAnalyze(
 
     // Step 6: Submit multimodal completion request to Groq vision model.
     const response = await clients.groq.chat.completions.create({
-      model: "meta-llama/llama-4-scout-17b-16e-instruct",
+      model: "qwen/qwen3.8-27b",
       messages: [
         ...conversationHistory,
         {
