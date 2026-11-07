@@ -196,7 +196,7 @@ export async function handleGrokAnalyze(
       return await message.reply({
         content: 'Invalid image format.'
       });
-    } 
+    }
 
   try {
     // Step 4: Download image binary buffer and convert to base64.
@@ -258,7 +258,7 @@ export async function handleGrokAnalyze(
     });
   } catch (error) {
     // Step 9: Catch and log unexpected runtime errors.
-    logError('Grok', 'Error:', error);
+    logError('GrokImage', 'Error:', error);
 
     await message.reply({
       ping: false,
