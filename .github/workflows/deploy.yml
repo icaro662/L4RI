@@ -64,3 +64,9 @@ jobs:
             echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
             docker compose -f docker/docker-compose.yml pull bot
             docker compose -f docker/docker-compose.yml up -d --no-build bot
+
+            # Remove old image tags for this repo, keeping 'latest' and the current commit SHA
+            docker images ghcr.io/icaro662/l4ri --format "{{.Tag}}" | grep -v -E "latest|$IMAGE_TAG" | xargs -I {} docker rmi ghcr.io/icaro662/l4ri:{} || true
+
+            # Prune any leftover dangling build layers or unused images
+            docker image prune -f
