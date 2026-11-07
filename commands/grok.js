@@ -213,7 +213,7 @@ export async function handleGrokAnalyze(
 
     conversationHistory.push({
       role: "user",
-      content: args.join(" ") || `Analise essa imagem: ${attachment.filename}`,
+      content: args.join(" ") || `Analise e descreva brevemente esta imagem: ${attachment.filename}`,
     });
 
     if (conversationHistory.length > 5) {
@@ -238,7 +238,7 @@ export async function handleGrokAnalyze(
           ],
         },
       ],
-      max_tokens: 4096,
+      max_tokens: 2048,
     });
 
     // Step 7: Record assistant response in conversation history.
