@@ -1,5 +1,5 @@
 import axios from "axios";
-import { client } from "../index.js";
+import { client} from "../index.js";
 import { error, log } from "../utils/logger.js";
 
 const CHANNEL_ID = process.env.TARGET_GAMESNOT_CHANNEL_ID;
@@ -171,7 +171,9 @@ export async function compareCache(isManualTrigger = false) {
 }
 
 export async function handleFreeCheck(message) {
-  // Pass true to indicate a manual check command
+  if (message.channel.id != CHANNEL_ID) {
+    return
+  }
   await compareCache(true);
 }
 
