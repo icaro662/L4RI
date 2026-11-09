@@ -5,6 +5,11 @@ import { error, log } from "../utils/logger.js";
 const CHANNEL_ID = process.env.TARGET_GAMESNOT_CHANNEL_ID;
 const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
 
+const today = new Date();
+let schedule = new Date()
+
+schedule.setTime(today.getTime() + TWELVE_HOURS_MS);
+
 let lastFreeGames = [];
 let itadCache = [];
 let lastFetch = 0;
@@ -175,7 +180,7 @@ export async function handleFreeCheck(message) {
  */
 export async function gamesFetchInterval() {
   log("FreeGames", "Initializing 12-hour games fetch interval scheduler...");
-
+  log("FreeGames", `Next Check: ${schedule}`);
   // Warm up cache once on startup without broadcasting unless necessary
   if (itadCache.length === 0) {
     await fetchFreeGames();
