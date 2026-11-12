@@ -42,7 +42,7 @@ function getEmbedVariants(url) {
   return [url];
 }
 
-const ERROR_MESSAGE_TIMEOUT_MS = 5000; // 5 seconds
+const ERROR_MESSAGE_TIMEOUT_MS = 5000;
 
 async function handleInstagramUrl(message, url, loadingMessage) {
   log('UrlParser', 'Handling Instagram URL:', url);
@@ -57,9 +57,7 @@ async function handleInstagramUrl(message, url, loadingMessage) {
 
     const buffer = await downloadInstagramMedia(url);
 
-    const title = metadata.title || 'Instagram Post';
     const description = metadata.description || 'No description provided.';
-    const account = metadata.uploader || metadata.channel || 'Unknown account';
     const shortenedDescription = description.length > 400
       ? `${description.slice(0, 397)}...`
       : description;
