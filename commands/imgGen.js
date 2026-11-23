@@ -1,22 +1,9 @@
-import { error as logError } from '../utils/logger.js';
+import {error as logError} from '../utils/logger.js';
+import { createCooldown } from '../utils/cooldown.js';
 
-import axios from 'axios';
+const IMAGE_GEN_COOLDOWN_MS = 45_000;
+const imageGenCooldown = createCooldown(IMAGE_GEN_COOLDOWN_MS);
 
-/**
- * Generates an AI-rendered image based on a user-provided text prompt using Pollinations.ai.
- *
- * Flow:
- * 1. Prompt Assembly: Joins `args` tokens by space into a single prompt string.
- * 2. Validation: If the resulting prompt is empty, sends a usage guide reply and exits.
- * 3. Progress Embed: Sends an initial "Generating image..." status embed to inform the user.
- * 4. Image URL Construction: Builds the Pollinations API endpoint URL with URI-encoded prompt text.
- * 5. Embed Update: Edits the pending status message, attaching the generated image URL in a rich embed.
- * 6. Error Handling: Catches any errors, logs them using `logError`, and replies with an error embed.
- *
- * @param {Object} message - Fluxer message object.
- * @param {string[]} args - Command arguments forming the text prompt for image generation.
- * @returns {Promise<Object|void>} Resolves when the image message is sent or on validation failure.
- */
 export async function handleImageGen(message, args) {
   // Step 1: Extract and validate prompt from command arguments.
   const prompt = args.join(" ");
@@ -28,8 +15,20 @@ export async function handleImageGen(message, args) {
     });
   }
 
+  // Step 2: Block calls that arrive within the global 45s window.
+  const { allowed, retryInMs } = imageGenCooldown.take();
+
+  if (!allowed) {
+    const seconds = Math.ceil(retryInMs / 1000);
+
+    return message.reply({
+      ping: false,
+      content: `Geração de imagem em timeout. Por favor, aguarde ${seconds} segundos.`,
+    });
+  }
+
   try {
-    // Step 2: Send initial progress embed to the channel.
+    // Step 3: Send initial progress embed to the channel.
     const loadingMessage = await message.reply({
       ping: false,
       embeds: [{
@@ -39,10 +38,10 @@ export async function handleImageGen(message, args) {
       }]
     });
 
-    // Step 3: Construct Pollinations AI image URL with encoded prompt.
+    // Step 4: Construct Pollinations AI image URL with encoded prompt.
     const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
 
-    // Step 4: Edit loading message to present generated image embed.
+    // Step 5: Edit loading message to present generated image embed.
     await loadingMessage.edit({
       embeds: [{
         title: prompt,
@@ -52,13 +51,13 @@ export async function handleImageGen(message, args) {
     });
 
   } catch (error) {
-    // Step 5: Catch and log unexpected generation errors, reporting failure to user.
+    // Step 6: Catch and log unexpected generation errors, reporting failure to user.
     logError('ImgGen', 'Image generation error:', error);
     await message.reply({
       ping: false,
       embeds: [{
-        title: "Image generation failed",
-        description: `An unexpected error occurred: \`${error.message}\``,
+        title: "Geração de imagem falhou.",
+        description: `Um erro inesperado ocorreu: \`${error.message}\``,
         color: 0xFF0000,
       }]
     });
