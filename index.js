@@ -7,6 +7,7 @@ import { WebSocketManager } from "@fluxerjs/ws";
 import { Groq } from "groq-sdk";
 import { handleCommand } from './utils/cmdFilter.js';
 import { error as logError, log } from './utils/logger.js';
+import { gamesFetchInterval } from './commands/freeGames.js';
 import consoleStamp from 'console-stamp';
 
 consoleStamp(console, {
@@ -122,14 +123,10 @@ client.on(Events.Ready, async () => {
     log('Index', 'Logged in sucessfully!');
 
     if (process.env.TARGET_GAMESNOT_CHANNEL_ID) {
-        log('Index', 'Free Games feature enabled.');
-
-        const { gamesFetchInterval } =
-            await import("./commands/freeGames.js");
-
-        await gamesFetchInterval();
+      log('Index', 'Free Games feature enabled.');
+      await gamesFetchInterval();
     } else {
-        log('Index', 'Free Games feature disabled.\n(Set TARGET_GAMESNOT_CHANNEL_ID in .env to enable.)');
+      log('Index', 'Free Games feature disabled.\n(Set TARGET_GAMESNOT_CHANNEL_ID in .env to enable.)');
     }
 });
 
